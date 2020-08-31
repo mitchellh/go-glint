@@ -1,10 +1,10 @@
 package dynamiccli
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -106,21 +106,23 @@ func (d *Document) RenderFrame() {
 	// NOTE(mitchellh): This is very fixable and we probably want to one day
 	rows -= 1
 
-	// We have to double render to determine the line count of each element.
-	// Then we go back and rerender so that we only clear less than the
-	// number of rows in the screen. This is important to avoid an infinite
-	// scrollback scenario.
-	var count, offset uint
+	// We first render into a set of buffers so we can ensure that we only
+	// render what we can see on the screen. If we render too many lines
+	// then we'll create an infinite scrollback. This prevents that.
+	var count uint
+	var renders []*bytes.Buffer
 	for i := len(d.els) - 1; i >= 0; i-- {
 		el := d.els[i]
-		thisCount := el.Render(ioutil.Discard, cols)
+
+		var render bytes.Buffer
+		thisCount := el.Render(&render, cols)
 		nextCount := count + thisCount
 		if nextCount > rows {
 			break
 		}
 
-		offset++
 		count = nextCount
+		renders = append(renders, &render)
 	}
 
 	// Remove the correct number of lines. If we're rendering more lines now
@@ -133,8 +135,8 @@ func (d *Document) RenderFrame() {
 	fmt.Fprint(d.w, b.Up(clear).Column(0).EraseLine(aec.EraseModes.All).ANSI)
 
 	// Go back and do our render
-	for _, el := range d.els[len(d.els)-int(offset):] {
-		el.Render(d.w, cols)
+	for i := len(renders) - 1; i >= 0; i-- {
+		io.Copy(d.w, bytes.NewReader(renders[i].Bytes()))
 		fmt.Fprintln(d.w)
 	}
 
