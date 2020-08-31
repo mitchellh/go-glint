@@ -12,8 +12,9 @@ import (
 
 // TODO: docs
 type Document struct {
-	w         io.Writer
 	mu        sync.Mutex
+	w         io.Writer
+	width     uint
 	els       []Element
 	lineCount uint
 }
@@ -23,6 +24,12 @@ func (d *Document) SetOutput(w io.Writer) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.w = w
+}
+
+func (d *Document) SetWidth(w uint) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.width = w
 }
 
 func (d *Document) Add(el ...Element) {
@@ -68,7 +75,7 @@ func (d *Document) RenderFrame() {
 
 	// Go through each element and output.
 	for _, el := range d.els {
-		d.lineCount += el.Render(d.w)
+		d.lineCount += el.Render(d.w, d.width)
 		fmt.Fprint(d.w, "\n")
 	}
 }

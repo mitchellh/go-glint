@@ -14,7 +14,7 @@ type Element interface {
 	// count includes the final line that doesn't end with a trailing newline.
 	// It is very important that the number of lines are correct in any
 	// implementation or rendering artifacts will occur.
-	Render(io.Writer) uint
+	Render(w io.Writer, width uint) uint
 
 	// Dynamic returns true if this element may change in the future.
 	// If this is false then at some point the element rendering may be

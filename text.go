@@ -18,7 +18,7 @@ func Text(v string) *TextElement {
 	}
 }
 
-func (el *TextElement) Render(w io.Writer) uint {
+func (el *TextElement) Render(w io.Writer, width uint) uint {
 	fmt.Fprint(w, el.text)
 	return 1
 }
