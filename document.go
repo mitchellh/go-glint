@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -17,10 +18,11 @@ import (
 type Document struct {
 	mu          sync.Mutex
 	w           io.Writer
-	width       uint
+	cols        uint
+	rows        uint
 	els         []Element
-	lineCount   uint
 	refreshRate time.Duration
+	lastCount   uint
 }
 
 // SetOutput sets the location where rendering will be drawn.
@@ -30,10 +32,11 @@ func (d *Document) SetOutput(w io.Writer) {
 	d.w = w
 }
 
-func (d *Document) SetWidth(w uint) {
+func (d *Document) SetSize(rows, cols uint) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.width = w
+	d.rows = rows
+	d.cols = cols
 }
 
 func (d *Document) SetRefreshRate(dur time.Duration) {
@@ -86,32 +89,57 @@ func (d *Document) RenderFrame() {
 	}
 
 	// Detect if we had a window size change
-	width := d.width
-	if width == 0 {
+	cols := d.cols
+	rows := d.rows
+	if cols == 0 || rows == 0 {
 		if f, ok := d.w.(*os.File); ok && sshterm.IsTerminal(int(f.Fd())) {
 			ws, err := pty.GetsizeFull(f)
 			if err == nil {
-				width = uint(ws.Cols)
+				rows = uint(ws.Rows)
+				cols = uint(ws.Cols)
 			}
 		}
 	}
 
-	// Delete prior output.
-	// TODO(mitchellh): on resizing to a smaller width, terminals will
-	// typically word wrap. We don't currently detect cursor location to clear
-	// this.
-	if d.lineCount > 0 {
-		fmt.Fprint(d.w, b.Up(d.lineCount).Column(0).EraseLine(aec.EraseModes.All).ANSI)
+	// We always have one less row than the size of the window because
+	// we draw a newline at the end of every render.
+	// NOTE(mitchellh): This is very fixable and we probably want to one day
+	rows -= 1
+
+	// We have to double render to determine the line count of each element.
+	// Then we go back and rerender so that we only clear less than the
+	// number of rows in the screen. This is important to avoid an infinite
+	// scrollback scenario.
+	var count, offset uint
+	for i := len(d.els) - 1; i >= 0; i-- {
+		el := d.els[i]
+		thisCount := el.Render(ioutil.Discard, cols)
+		nextCount := count + thisCount
+		if nextCount > rows {
+			break
+		}
+
+		offset++
+		count = nextCount
 	}
 
-	// Reset our line count to zero and start rerendering
-	d.lineCount = 0
-
-	// Go through each element and output.
-	for _, el := range d.els {
-		d.lineCount += el.Render(d.w, width)
-		fmt.Fprint(d.w, "\n")
+	// Remove the correct number of lines. If we're rendering more lines now
+	// than we ever have before, then we only clear what we drew before
+	// otherwise we'll delete back before us.
+	clear := count
+	if clear > d.lastCount {
+		clear = d.lastCount
 	}
+	fmt.Fprint(d.w, b.Up(clear).Column(0).EraseLine(aec.EraseModes.All).ANSI)
+
+	// Go back and do our render
+	for _, el := range d.els[len(d.els)-int(offset):] {
+		el.Render(d.w, cols)
+		fmt.Fprintln(d.w)
+	}
+
+	// Store how much we drew
+	d.lastCount = count
 }
 
 var b = aec.EmptyBuilder
