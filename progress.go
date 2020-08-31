@@ -37,7 +37,3 @@ func (el *ProgressElement) Render(w io.Writer, width uint) uint {
 
 	return 1
 }
-
-func (el *ProgressElement) Dynamic() bool {
-	return true
-}

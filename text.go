@@ -34,7 +34,3 @@ func (el *TextElement) Render(w io.Writer, width uint) uint {
 	fmt.Fprint(w, el.text)
 	return 1
 }
-
-func (el *TextElement) Dynamic() bool {
-	return false
-}
