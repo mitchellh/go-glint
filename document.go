@@ -125,14 +125,15 @@ func (d *Document) RenderFrame() {
 		renders = append(renders, &render)
 	}
 
-	// Remove the correct number of lines. If we're rendering more lines now
-	// than we ever have before, then we only clear what we drew before
-	// otherwise we'll delete back before us.
-	clear := count
-	if clear > d.lastCount {
-		clear = d.lastCount
+	// Clear the number of lines we rendered during the last pass. If this
+	// is more than the rows that we have then we clear the rows.
+	clear := d.lastCount
+	if clear > rows {
+		clear = rows
 	}
-	fmt.Fprint(d.w, b.Up(clear).Column(0).EraseLine(aec.EraseModes.All).ANSI)
+	for i := uint(0); i < clear; i++ {
+		fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
+	}
 
 	// Go back and do our render
 	for i := len(renders) - 1; i >= 0; i-- {
