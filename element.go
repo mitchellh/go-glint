@@ -1,9 +1,5 @@
 package dynamiccli
 
-import (
-	"io"
-)
-
 // Elements are the individual items that are rendered within a document.
 type Element interface {
 	// Render is called to render this element. This should NOT render a
@@ -14,5 +10,5 @@ type Element interface {
 	// count includes the final line that doesn't end with a trailing newline.
 	// It is very important that the number of lines are correct in any
 	// implementation or rendering artifacts will occur.
-	Render(w io.Writer, width uint) uint
+	Render(width uint) string
 }

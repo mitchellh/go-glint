@@ -1,8 +1,6 @@
 package dynamiccli
 
 import (
-	"fmt"
-	"io"
 	"sync"
 )
 
@@ -28,9 +26,8 @@ func (el *TextElement) Update(text string) {
 	el.text = text
 }
 
-func (el *TextElement) Render(w io.Writer, width uint) uint {
+func (el *TextElement) Render(width uint) string {
 	el.mu.Lock()
 	defer el.mu.Unlock()
-	fmt.Fprint(w, el.text)
-	return 1
+	return el.text
 }

@@ -1,11 +1,11 @@
 package dynamiccli
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -106,43 +106,39 @@ func (d *Document) RenderFrame() {
 	// NOTE(mitchellh): This is very fixable and we probably want to one day
 	rows -= 1
 
-	// We first render into a set of buffers so we can ensure that we only
-	// render what we can see on the screen. If we render too many lines
-	// then we'll create an infinite scrollback. This prevents that.
-	var count uint
-	var renders []*bytes.Buffer
-	for i := len(d.els) - 1; i >= 0; i-- {
-		el := d.els[i]
-
-		var render bytes.Buffer
-		thisCount := el.Render(&render, cols)
-		nextCount := count + thisCount
-		if nextCount > rows {
-			break
+	// Remove what we last drew. If what we last drew is greater than the number
+	// of rows then we need to clear the screen.
+	if d.lastCount <= rows {
+		for i := uint(0); i < d.lastCount; i++ {
+			fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
 		}
-
-		count = nextCount
-		renders = append(renders, &render)
+	} else {
+		// TODO: clear display
 	}
 
-	// Clear the number of lines we rendered during the last pass. If this
-	// is more than the rows that we have then we clear the rows.
-	clear := d.lastCount
-	if clear > rows {
-		clear = rows
-	}
-	for i := uint(0); i < clear; i++ {
-		fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
-	}
-
-	// Go back and do our render
-	for i := len(renders) - 1; i >= 0; i-- {
-		io.Copy(d.w, bytes.NewReader(renders[i].Bytes()))
-		fmt.Fprintln(d.w)
+	// Render our elements
+	var b strings.Builder
+	for _, el := range d.els {
+		b.WriteString(el.Render(cols))
+		b.WriteRune('\n')
 	}
 
 	// Store how much we drew
-	d.lastCount = count
+	d.lastCount = uint(countLines(b.String()))
+
+	// Draw
+	io.Copy(d.w, strings.NewReader(b.String()))
+}
+
+func countLines(s string) int {
+	count := strings.Count(s, "\n")
+
+	// If the last character isn't a newline, we have to add one since we'll
+	// always have one more line than newline characters.
+	if len(s) > 0 && s[len(s)-1] != '\n' {
+		count++
+	}
+	return count
 }
 
 var b = aec.EmptyBuilder

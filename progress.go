@@ -1,9 +1,6 @@
 package dynamiccli
 
 import (
-	"fmt"
-	"io"
-
 	"github.com/cheggaaa/pb/v3"
 )
 
@@ -23,17 +20,15 @@ func Progress(total int) *ProgressElement {
 	}
 }
 
-func (el *ProgressElement) Render(w io.Writer, width uint) uint {
+func (el *ProgressElement) Render(width uint) string {
 	// If we have no progress bar render nothing.
 	if el.ProgressBar == nil {
-		return 0
+		return ""
 	}
 
 	// Set the width so we render properly
 	el.ProgressBar.SetWidth(int(width))
 
 	// Write the current progress
-	fmt.Fprint(w, el.ProgressBar.String())
-
-	return 1
+	return el.ProgressBar.String()
 }
