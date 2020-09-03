@@ -26,8 +26,11 @@ func (el *TextElement) Update(text string) {
 	el.text = text
 }
 
-func (el *TextElement) Render(width uint) string {
+func (el *TextElement) Render(rows, cols uint) string {
 	el.mu.Lock()
 	defer el.mu.Unlock()
 	return el.text
+}
+func (el *TextElement) Layout() *Layout {
+	return NewLayout().MinHeight(1).Overflow(OverflowHidden)
 }

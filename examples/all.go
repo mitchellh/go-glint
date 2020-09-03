@@ -33,9 +33,10 @@ func main() {
 	var d dynamiccli.Document
 	d.SetOutput(os.Stdout)
 	d.Add(
-		dynamiccli.Text("Static text element"),
+		dynamiccli.Text("Fixed to top"),
 		p,
 		timeEl,
+		dynamiccli.Text("All with flexbox!"),
 	)
 	d.Render(context.Background())
 }

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/creack/pty"
 	"github.com/morikuni/aec"
 	sshterm "golang.org/x/crypto/ssh/terminal"
+
+	"github.com/mitchellh/go-dynamic-cli/internal/flex"
 )
 
 // TODO: docs
@@ -113,32 +114,96 @@ func (d *Document) RenderFrame() {
 			fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
 		}
 	} else {
-		// TODO: clear display
+		fmt.Fprint(d.w, b.EraseDisplay(aec.EraseModes.All).EraseDisplay(aec.EraseMode(3)).Position(0, 0).ANSI)
 	}
 
+	// Setup our root display which is our terminal
+	config := flex.NewConfig()
+	root := flex.NewNodeWithConfig(config)
+	root.StyleSetWidth(float32(cols))
+	root.StyleSetMaxHeight(float32(rows))
+	//root.StyleSetMaxHeight(5)
+	root.StyleSetOverflow(flex.OverflowHidden)
+
 	// Render our elements
-	var b strings.Builder
-	for _, el := range d.els {
-		b.WriteString(el.Render(cols))
-		b.WriteRune('\n')
+	elCache := make([]*measureContext, len(d.els))
+	for idx, el := range d.els {
+		// If the element wants the terminal size, give it.
+		if el, ok := el.(ElementTerminalSizer); ok {
+			el.SetTerminalSize(rows, cols)
+		}
+
+		// Setup our node
+		node := flex.NewNodeWithConfig(config)
+		node.SetMeasureFunc(measureNode)
+		node.StyleSetFlexShrink(1)
+		node.StyleSetFlexGrow(0)
+		node.StyleSetFlexDirection(flex.FlexDirectionRow)
+
+		// If our node has layout properties, grab those.
+		if el, ok := el.(ElementLayout); ok {
+			el.Layout().apply(node)
+		}
+
+		// Setup our contxt
+		elCache[idx] = &measureContext{
+			Element: el,
+		}
+		node.Context = elCache[idx]
+
+		// Insert our child
+		root.InsertChild(node, idx)
+	}
+
+	// Calculate the layout
+	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
+
+	if false {
+		// Debug
+		fmt.Printf("rows: %d\n", rows)
+		fmt.Printf("cols: %d\n", cols)
+		fmt.Printf("root left: %f\n", root.LayoutGetLeft())     // 0
+		fmt.Printf("root top: %f\n", root.LayoutGetTop())       // 0
+		fmt.Printf("root width: %f\n", root.LayoutGetWidth())   // 200
+		fmt.Printf("root height: %f\n", root.LayoutGetHeight()) // 200
+		for i := 0; ; i++ {
+			child := root.GetChild(i)
+			if child == nil {
+				break
+			}
+
+			fmt.Printf("child %d left: %f\n", i, child.LayoutGetLeft())     // 0
+			fmt.Printf("child %d top: %f\n", i, child.LayoutGetTop())       // 0
+			fmt.Printf("child %d width: %f\n", i, child.LayoutGetWidth())   // 200
+			fmt.Printf("child %d height: %f\n", i, child.LayoutGetHeight()) // 200
+		}
+		os.Exit(1)
+	}
+
+	// Render each
+	for idx, elCtx := range elCache {
+		child := root.GetChild(idx)
+		if child == nil {
+			break
+		}
+
+		// If the height that the layout engine calculated is less than
+		// the height that we originally measured, then we need to give the
+		// element a chance to rerender into that height. If it still exceeds
+		// it, we truncate.
+		height := child.LayoutGetHeight()
+		if height < elCtx.Size.Height {
+			elCtx.Text = truncateTextHeight(elCtx.Text, int(height))
+		}
+
+		fmt.Fprint(d.w, elCtx.Text)
+		if len(elCtx.Text) > 0 && elCtx.Text[len(elCtx.Text)-1] != '\n' {
+			fmt.Fprintln(d.w)
+		}
 	}
 
 	// Store how much we drew
-	d.lastCount = uint(countLines(b.String()))
-
-	// Draw
-	io.Copy(d.w, strings.NewReader(b.String()))
-}
-
-func countLines(s string) int {
-	count := strings.Count(s, "\n")
-
-	// If the last character isn't a newline, we have to add one since we'll
-	// always have one more line than newline characters.
-	if len(s) > 0 && s[len(s)-1] != '\n' {
-		count++
-	}
-	return count
+	d.lastCount = uint(root.LayoutGetHeight())
 }
 
 var b = aec.EmptyBuilder
