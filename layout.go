@@ -138,6 +138,7 @@ func truncateTextHeight(s string, height int) string {
 		idx += next + 1
 	}
 
+	// This can happen if height == 0
 	if idx == 0 {
 		return ""
 	}

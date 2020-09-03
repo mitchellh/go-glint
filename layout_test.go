@@ -61,6 +61,13 @@ func TestTruncateTextHeight(t *testing.T) {
 		},
 
 		{
+			"height zero",
+			"hello\nworld\n",
+			0,
+			"",
+		},
+
+		{
 			"shorter than limit",
 			"foo\nbar",
 			5,

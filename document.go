@@ -158,8 +158,8 @@ func (d *Document) RenderFrame() {
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
 
+	// Debug. Flip this to true to see flexbox calculations.
 	if false {
-		// Debug
 		fmt.Printf("rows: %d\n", rows)
 		fmt.Printf("cols: %d\n", cols)
 		fmt.Printf("root left: %f\n", root.LayoutGetLeft())     // 0
@@ -186,18 +186,27 @@ func (d *Document) RenderFrame() {
 		if child == nil {
 			break
 		}
+		text := elCtx.Text
 
-		// If the height that the layout engine calculated is less than
+		// If the height/width that the layout engine calculated is less than
 		// the height that we originally measured, then we need to give the
-		// element a chance to rerender into that height. If it still exceeds
+		// element a chance to rerender into that dimension. If it still exceeds
 		// it, we truncate.
 		height := child.LayoutGetHeight()
-		if height < elCtx.Size.Height {
-			elCtx.Text = truncateTextHeight(elCtx.Text, int(height))
+		width := child.LayoutGetWidth()
+		if height < elCtx.Size.Height || width < elCtx.Size.Width {
+			// Rerender into it
+			text = elCtx.Element.Render(uint(height), uint(width))
+
+			// Truncate, no-ops if it fits.
+			text = truncateTextHeight(text, int(height))
 		}
 
-		fmt.Fprint(d.w, elCtx.Text)
-		if len(elCtx.Text) > 0 && elCtx.Text[len(elCtx.Text)-1] != '\n' {
+		fmt.Fprint(d.w, text)
+
+		// If the text didn't end with a newline then we add one since
+		// all elements here are block-level.
+		if len(text) > 0 && text[len(text)-1] != '\n' {
 			fmt.Fprintln(d.w)
 		}
 	}
