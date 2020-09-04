@@ -1,9 +1,10 @@
-package dynamiccli
+package components
 
 import (
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/mitchellh/go-dynamic-cli"
 )
 
 // ProgressElement renders a progress bar. This wraps the cheggaaa/pb package
@@ -22,21 +23,17 @@ func Progress(total int) *ProgressElement {
 	}
 }
 
-func (el *ProgressElement) Body() Component {
+func (el *ProgressElement) Body() dynamiccli.Component {
 	// If we have no progress bar render nothing.
 	if el.ProgressBar == nil {
 		return nil
 	}
 
 	// Write the current progress
-	return TextFunc(func(rows, cols uint) string {
+	return dynamiccli.TextFunc(func(rows, cols uint) string {
 		el.ProgressBar.SetWidth(int(cols))
 
 		//return el.ProgressBar.String()
 		return strings.TrimSpace(strings.Repeat(el.ProgressBar.String()+"\n", 5))
 	})
-}
-
-func (el *ProgressElement) Layout() *Layout {
-	return NewLayout().MinHeight(0).Overflow(OverflowHidden)
 }

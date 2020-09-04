@@ -1,5 +1,9 @@
 package dynamiccli
 
+import (
+	"github.com/mitchellh/go-dynamic-cli/internal/layout"
+)
+
 // Components are the individual items that are rendered within a document.
 type Component interface {
 	// Body returns the body of this component. This can be another custom
@@ -18,14 +22,16 @@ type ComponentTerminalSizer interface {
 	SetTerminalSize(rows, cols uint)
 }
 
-// ComponentLayout can be implemented to set custom layout settings
-// for the component. These layout settings will control how the component
-// is rendered into the window.
-type ComponentLayout interface {
+// componentLayout can be implemented to set custom layout settings
+// for the component. This can only be implemented by internal components
+// since we use an internal library.
+//
+// End users should use the "Layout" component to set layout options.
+type componentLayout interface {
 	Component
 
 	// Layout should return the layout settings for this component.
-	Layout() *Layout
+	Layout() *layout.Builder
 }
 
 // terminalComponent is an embeddable struct for internal usage that

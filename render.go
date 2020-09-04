@@ -3,9 +3,14 @@ package dynamiccli
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/mitchellh/go-dynamic-cli/internal/flex"
 )
+
+var debugTree = false
 
 func tree(
 	parent *flex.Node,
@@ -27,8 +32,8 @@ func tree(
 	}
 
 	// Setup a custom layout
-	if c, ok := c.(ComponentLayout); ok {
-		c.Layout().apply(node)
+	if c, ok := c.(componentLayout); ok {
+		c.Layout().Apply(node)
 	}
 
 	switch c := c.(type) {
@@ -56,13 +61,38 @@ func tree(
 }
 
 func renderTree(w io.Writer, parent *flex.Node, lastRow int) {
-	for _, child := range parent.Children {
+	if debugTree {
+		if w != ioutil.Discard {
+			fmt.Printf("parent left: %f\n", parent.LayoutGetLeft())     // 0
+			fmt.Printf("parent top: %f\n", parent.LayoutGetTop())       // 0
+			fmt.Printf("parent width: %f\n", parent.LayoutGetWidth())   // 200
+			fmt.Printf("parent height: %f\n", parent.LayoutGetHeight()) // 200
+			defer os.Exit(1)
+		}
+
+		w = ioutil.Discard
+	}
+
+	for i, child := range parent.Children {
+		// Debug. Flip this to true to see flexbox calculations.
+		if debugTree {
+			fmt.Printf("child %d left: %f\n", i, child.LayoutGetLeft())     // 0
+			fmt.Printf("child %d top: %f\n", i, child.LayoutGetTop())       // 0
+			fmt.Printf("child %d width: %f\n", i, child.LayoutGetWidth())   // 200
+			fmt.Printf("child %d height: %f\n", i, child.LayoutGetHeight()) // 200
+		}
+
 		// If we're on a different row than last time then we draw a newline.
 		thisRow := int(child.LayoutGetTop())
 		if lastRow >= 0 && thisRow > lastRow {
 			fmt.Fprintln(w)
 		}
 		lastRow = thisRow
+
+		// If we have a left margin, draw that first.
+		if v := int(child.LayoutGetMargin(flex.EdgeLeft)); v > 0 {
+			fmt.Fprint(w, strings.Repeat(" ", v))
+		}
 
 		// Get our node context. If we don't have one then we're a container
 		// and we render below.

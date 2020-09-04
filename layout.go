@@ -6,58 +6,6 @@ import (
 	"github.com/mitchellh/go-dynamic-cli/internal/flex"
 )
 
-type Layout struct {
-	f func(*flex.Node)
-}
-
-func NewLayout() *Layout {
-	return &Layout{}
-}
-
-func (l *Layout) apply(node *flex.Node) {
-	if l == nil || l.f == nil {
-		return
-	}
-
-	l.f(node)
-}
-
-func (l *Layout) add(f func(*flex.Node)) *Layout {
-	old := l.f
-	new := func(n *flex.Node) {
-		if old != nil {
-			old(n)
-		}
-
-		f(n)
-	}
-
-	return &Layout{f: new}
-}
-
-func (l *Layout) MinHeight(v float32) *Layout {
-	return l.add(func(n *flex.Node) {
-		n.StyleSetMinHeight(v)
-	})
-}
-
-func (l *Layout) Overflow(v Overflow) *Layout {
-	return l.add(func(n *flex.Node) {
-		n.StyleSetOverflow(flex.Overflow(v))
-	})
-}
-
-type Overflow int
-
-const (
-	// OverflowVisible is "visible"
-	OverflowVisible Overflow = iota
-	// OverflowHidden is "hidden"
-	OverflowHidden
-	// OverflowScroll is "scroll"
-	OverflowScroll
-)
-
 func measureNode(
 	node *flex.Node,
 	width float32,

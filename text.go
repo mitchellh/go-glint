@@ -47,7 +47,3 @@ func (el *TextComponent) render(rows, cols uint) string {
 
 	return el.text
 }
-
-func (el *TextComponent) Layout() *Layout {
-	return NewLayout().MinHeight(1).Overflow(OverflowHidden)
-}
