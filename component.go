@@ -8,7 +8,32 @@ import (
 type Component interface {
 	// Body returns the body of this component. This can be another custom
 	// component or a standard component such as Text.
+	//
+	// Components are highly encouraged to support finalization (see
+	// ComponentFinalizer). Components can finalize early by wrapping
+	// their body in a Finalize built-in component. Finalization allows
+	// the renderer to highly optimize output.
 	Body() Component
+}
+
+// ComponentFinalizer allows components to be notified they are going to
+// be finalized. A finalized component may never be re-rendered again. The
+// next call to Body should be considered the final call.
+//
+// In a Document, if the component list has a set of finalized components
+// at the front, the renderer will draw it once and only re-draw non-finalized
+// components. For example, consider a document that is a set of text components
+// followed by a progress bar. If the text components are static, then they
+// will be written to the output once and only the progress bar will redraw.
+//
+// Currently, Body may be called multiple times after Finalize. Implementers
+// should return the same result after being finalized.
+type ComponentFinalizer interface {
+	Component
+
+	// Finalize notifies the component that it will be finalized. This may
+	// be called multiple times.
+	Finalize()
 }
 
 // ComponentTerminalSizer can be implemented to receive the terminal size.

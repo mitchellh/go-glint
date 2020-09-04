@@ -23,7 +23,7 @@ type Document struct {
 	rows        uint
 	els         []Component
 	refreshRate time.Duration
-	lastCount   uint
+	lastHeight  uint
 }
 
 // SetOutput sets the location where rendering will be drawn.
@@ -104,13 +104,13 @@ func (d *Document) RenderFrame() {
 
 	// Remove what we last drew. If what we last drew is greater than the number
 	// of rows then we need to clear the screen.
-	if d.lastCount > 0 {
-		if d.lastCount <= rows {
+	if d.lastHeight > 0 {
+		if d.lastHeight <= rows {
 			// Delete current line
 			fmt.Fprint(d.w, b.Column(0).EraseLine(aec.EraseModes.All).ANSI)
 
 			// Delete n lines above
-			for i := uint(0); i < d.lastCount-1; i++ {
+			for i := uint(0); i < d.lastHeight-1; i++ {
 				fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
 			}
 		} else {
@@ -158,7 +158,39 @@ func (d *Document) RenderFrame() {
 	renderTree(d.w, root, -1)
 
 	// Store how much we drew
-	d.lastCount = uint(root.LayoutGetHeight())
+	height := uint(root.LayoutGetHeight())
+
+	// If our component list is prefixed with finalized components, we
+	// prune these out and do not re-render them.
+	finalIdx := -1
+	for i, el := range d.els {
+		child := root.GetChild(i)
+		if child == nil {
+			break
+		}
+
+		// If the component is not finalized then we exit. If the
+		// component doesn't match our expectations it means we hit
+		// something weird and we exit too.
+		ctx, ok := child.Context.(*parentContext)
+		if !ok || ctx == nil || ctx.Component != el || !ctx.Finalized {
+			break
+		}
+
+		// If this is finalized, then we have to subtract from the
+		// height the height of this child since we're not going to redraw.
+		// Then continue until we find one that isn't finalized.
+		height -= uint(child.LayoutGetHeight())
+		finalIdx = i
+	}
+	if finalIdx >= 0 {
+		els := d.els[finalIdx+1:]
+		d.els = make([]Component, len(els))
+		copy(d.els, els)
+	}
+
+	// Store our last height which has now been processed for finalizations.
+	d.lastHeight = height
 }
 
 var b = aec.EmptyBuilder

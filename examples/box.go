@@ -13,6 +13,7 @@ func main() {
 	var d dynamiccli.Document
 	d.SetOutput(os.Stdout)
 	d.Add(
+		dynamiccli.Finalize(dc.Stopwatch(time.Now())),
 		dc.Layout(
 			dc.Spinner(),
 			dc.Layout(dynamiccli.Text("Build site and validate links...")).MarginLeft(1),

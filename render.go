@@ -24,9 +24,26 @@ func tree(
 		return
 	}
 
+	// Fragments don't create a node
+	if c, ok := c.(*fragmentComponent); ok {
+		for _, c := range c.List {
+			tree(parent, c, termRows, termCols)
+		}
+
+		return
+	}
+
 	// Setup our node
 	node := flex.NewNodeWithConfig(parent.Config)
 	parent.InsertChild(node, len(parent.Children))
+
+	// Check if we're finalized and note it
+	if _, ok := c.(*finalizedComponent); ok {
+		node.Context = &parentContext{
+			Component: c,
+			Finalized: true,
+		}
+	}
 
 	// Notify of the terminal size
 	if c, ok := c.(ComponentTerminalSizer); ok {
@@ -39,11 +56,6 @@ func tree(
 	}
 
 	switch c := c.(type) {
-	case *fragmentComponent:
-		for _, c := range c.List {
-			tree(parent, c, termRows, termCols)
-		}
-
 	case *TextComponent:
 		// If this is a terminal node then we setup extra styles
 		node.Context = &nodeContext{
@@ -127,6 +139,11 @@ func renderTree(w io.Writer, parent *flex.Node, lastRow int) {
 		// Draw our text
 		fmt.Fprint(w, text)
 	}
+}
+
+type parentContext struct {
+	Component Component
+	Finalized bool
 }
 
 type nodeContext struct {
