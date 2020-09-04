@@ -2,6 +2,9 @@ package dynamiccli
 
 // Components are the individual items that are rendered within a document.
 type Component interface {
+	// Body
+	Body() Component
+
 	// Render is called to render this element.
 	//
 	// The rows/cols given are advisory. If the cols are ignored, the return
@@ -9,7 +12,6 @@ type Component interface {
 	// behavior may be undesirable and so it is recommended you remain within
 	// the advisory amounts. If the rows are ignored, the output will be
 	// truncated.
-	Render(rows, cols uint) string
 }
 
 // ComponentTerminalSizer can be implemented to receive the terminal size.
@@ -28,3 +30,7 @@ type ComponentLayout interface {
 
 	Layout() *Layout
 }
+
+type terminalComponent struct{}
+
+func (terminalComponent) Body() Component { return nil }

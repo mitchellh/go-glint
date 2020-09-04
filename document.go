@@ -121,39 +121,12 @@ func (d *Document) RenderFrame() {
 	config := flex.NewConfig()
 	root := flex.NewNodeWithConfig(config)
 	root.StyleSetWidth(float32(cols))
-	root.StyleSetMaxHeight(float32(rows))
+	//root.StyleSetMaxHeight(float32(rows))
 	//root.StyleSetMaxHeight(5)
 	root.StyleSetOverflow(flex.OverflowHidden)
 
-	// Render our elements
-	elCache := make([]*measureContext, len(d.els))
-	for idx, el := range d.els {
-		// If the element wants the terminal size, give it.
-		if el, ok := el.(ComponentTerminalSizer); ok {
-			el.SetTerminalSize(rows, cols)
-		}
-
-		// Setup our node
-		node := flex.NewNodeWithConfig(config)
-		node.SetMeasureFunc(measureNode)
-		node.StyleSetFlexShrink(1)
-		node.StyleSetFlexGrow(0)
-		node.StyleSetFlexDirection(flex.FlexDirectionRow)
-
-		// If our node has layout properties, grab those.
-		if el, ok := el.(ComponentLayout); ok {
-			el.Layout().apply(node)
-		}
-
-		// Setup our contxt
-		elCache[idx] = &measureContext{
-			Component: el,
-		}
-		node.Context = elCache[idx]
-
-		// Insert our child
-		root.InsertChild(node, idx)
-	}
+	// Build our render tree
+	tree(root, Fragment(d.els...), rows, cols)
 
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
@@ -180,36 +153,8 @@ func (d *Document) RenderFrame() {
 		os.Exit(1)
 	}
 
-	// Render each
-	for idx, elCtx := range elCache {
-		child := root.GetChild(idx)
-		if child == nil {
-			break
-		}
-		text := elCtx.Text
-
-		// If the height/width that the layout engine calculated is less than
-		// the height that we originally measured, then we need to give the
-		// element a chance to rerender into that dimension. If it still exceeds
-		// it, we truncate.
-		height := child.LayoutGetHeight()
-		width := child.LayoutGetWidth()
-		if height < elCtx.Size.Height || width < elCtx.Size.Width {
-			// Rerender into it
-			text = elCtx.Component.Render(uint(height), uint(width))
-
-			// Truncate, no-ops if it fits.
-			text = truncateTextHeight(text, int(height))
-		}
-
-		fmt.Fprint(d.w, text)
-
-		// If the text didn't end with a newline then we add one since
-		// all elements here are block-level.
-		if len(text) > 0 && text[len(text)-1] != '\n' {
-			fmt.Fprintln(d.w)
-		}
-	}
+	// Render the tree
+	renderTree(d.w, root)
 
 	// Store how much we drew
 	d.lastCount = uint(root.LayoutGetHeight())

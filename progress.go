@@ -22,18 +22,19 @@ func Progress(total int) *ProgressElement {
 	}
 }
 
-func (el *ProgressElement) Render(rows, cols uint) string {
+func (el *ProgressElement) Body() Component {
 	// If we have no progress bar render nothing.
 	if el.ProgressBar == nil {
-		return ""
+		return nil
 	}
 
-	// Set the width so we render properly
-	el.ProgressBar.SetWidth(int(cols))
-
 	// Write the current progress
-	//return el.ProgressBar.String()
-	return strings.TrimSpace(strings.Repeat(el.ProgressBar.String()+"\n", 15))
+	return TextFunc(func(rows, cols uint) string {
+		el.ProgressBar.SetWidth(int(cols))
+
+		//return el.ProgressBar.String()
+		return strings.TrimSpace(strings.Repeat(el.ProgressBar.String()+"\n", 15))
+	})
 }
 
 func (el *ProgressElement) Layout() *Layout {

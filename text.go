@@ -4,33 +4,50 @@ import (
 	"sync"
 )
 
-// TextElements is an Element that renders text.
-type TextElement struct {
+// TextComponent is a Component that renders text.
+type TextComponent struct {
 	mu   sync.Mutex
 	text string
+	f    func(rows, cols uint) string
 }
 
-// Text creates a TextElement for static text. The text here will be word
+// Text creates a TextComponent for static text. The text here will be word
 // wrapped automatically based on the width of the terminal.
-func Text(v string) *TextElement {
-	return &TextElement{
+func Text(v string) *TextComponent {
+	return &TextComponent{
 		text: v,
+	}
+}
+
+func TextFunc(f func(rows, cols uint) string) *TextComponent {
+	return &TextComponent{
+		f: f,
 	}
 }
 
 // Update updates the text element. This is safe to call while this is being
 // rendered.
-func (el *TextElement) Update(text string) {
+func (el *TextComponent) Update(text string) {
 	el.mu.Lock()
 	defer el.mu.Unlock()
 	el.text = text
 }
 
-func (el *TextElement) Render(rows, cols uint) string {
+func (el *TextComponent) Body() Component {
+	return nil
+}
+
+func (el *TextComponent) render(rows, cols uint) string {
 	el.mu.Lock()
 	defer el.mu.Unlock()
+
+	if el.f != nil {
+		return el.f(rows, cols)
+	}
+
 	return el.text
 }
-func (el *TextElement) Layout() *Layout {
+
+func (el *TextComponent) Layout() *Layout {
 	return NewLayout().MinHeight(1).Overflow(OverflowHidden)
 }

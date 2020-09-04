@@ -58,12 +58,6 @@ const (
 	OverflowScroll
 )
 
-type measureContext struct {
-	Component Component
-	Text      string
-	Size      flex.Size
-}
-
 func measureNode(
 	node *flex.Node,
 	width float32,
@@ -72,13 +66,13 @@ func measureNode(
 	heightMode flex.MeasureMode,
 ) flex.Size {
 	// If we have no context set then we use the full spacing.
-	ctx, ok := node.Context.(*measureContext)
+	ctx, ok := node.Context.(*nodeContext)
 	if !ok || ctx == nil {
 		return flex.Size{Width: width, Height: height}
 	}
 
 	// Otherwise, we have to render this.
-	ctx.Text = ctx.Component.Render(uint(height), uint(width))
+	ctx.Text = ctx.Component.render(uint(height), uint(width))
 	ctx.Size = flex.Size{
 		Width:  float32(longestLine(ctx.Text)),
 		Height: float32(countLines(ctx.Text)),
