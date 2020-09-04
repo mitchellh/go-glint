@@ -21,7 +21,7 @@ type Document struct {
 	w           io.Writer
 	cols        uint
 	rows        uint
-	els         []Element
+	els         []Component
 	refreshRate time.Duration
 	lastCount   uint
 }
@@ -46,7 +46,7 @@ func (d *Document) SetRefreshRate(dur time.Duration) {
 	d.refreshRate = dur
 }
 
-func (d *Document) Add(el ...Element) {
+func (d *Document) Add(el ...Component) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.els = append(d.els, el...)
@@ -129,7 +129,7 @@ func (d *Document) RenderFrame() {
 	elCache := make([]*measureContext, len(d.els))
 	for idx, el := range d.els {
 		// If the element wants the terminal size, give it.
-		if el, ok := el.(ElementTerminalSizer); ok {
+		if el, ok := el.(ComponentTerminalSizer); ok {
 			el.SetTerminalSize(rows, cols)
 		}
 
@@ -141,13 +141,13 @@ func (d *Document) RenderFrame() {
 		node.StyleSetFlexDirection(flex.FlexDirectionRow)
 
 		// If our node has layout properties, grab those.
-		if el, ok := el.(ElementLayout); ok {
+		if el, ok := el.(ComponentLayout); ok {
 			el.Layout().apply(node)
 		}
 
 		// Setup our contxt
 		elCache[idx] = &measureContext{
-			Element: el,
+			Component: el,
 		}
 		node.Context = elCache[idx]
 
@@ -196,7 +196,7 @@ func (d *Document) RenderFrame() {
 		width := child.LayoutGetWidth()
 		if height < elCtx.Size.Height || width < elCtx.Size.Width {
 			// Rerender into it
-			text = elCtx.Element.Render(uint(height), uint(width))
+			text = elCtx.Component.Render(uint(height), uint(width))
 
 			// Truncate, no-ops if it fits.
 			text = truncateTextHeight(text, int(height))

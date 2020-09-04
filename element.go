@@ -1,7 +1,7 @@
 package dynamiccli
 
-// Elements are the individual items that are rendered within a document.
-type Element interface {
+// Components are the individual items that are rendered within a document.
+type Component interface {
 	// Render is called to render this element.
 	//
 	// The rows/cols given are advisory. If the cols are ignored, the return
@@ -12,10 +12,10 @@ type Element interface {
 	Render(rows, cols uint) string
 }
 
-// ElementTerminalSizer can be implemented to receive the terminal size.
+// ComponentTerminalSizer can be implemented to receive the terminal size.
 // See the function docs for more information.
-type ElementTerminalSizer interface {
-	Element
+type ComponentTerminalSizer interface {
+	Component
 
 	// SetTerminalSize is called with the full terminal size. This may
 	// exceed the size given by Render in certain cases. This will be called
@@ -23,8 +23,8 @@ type ElementTerminalSizer interface {
 	SetTerminalSize(rows, cols uint)
 }
 
-type ElementLayout interface {
-	Element
+type ComponentLayout interface {
+	Component
 
 	Layout() *Layout
 }

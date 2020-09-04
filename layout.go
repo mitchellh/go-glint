@@ -59,9 +59,9 @@ const (
 )
 
 type measureContext struct {
-	Element Element
-	Text    string
-	Size    flex.Size
+	Component Component
+	Text      string
+	Size      flex.Size
 }
 
 func measureNode(
@@ -78,7 +78,7 @@ func measureNode(
 	}
 
 	// Otherwise, we have to render this.
-	ctx.Text = ctx.Element.Render(uint(height), uint(width))
+	ctx.Text = ctx.Component.Render(uint(height), uint(width))
 	ctx.Size = flex.Size{
 		Width:  float32(longestLine(ctx.Text)),
 		Height: float32(countLines(ctx.Text)),
