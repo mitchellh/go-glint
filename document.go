@@ -127,7 +127,7 @@ func (d *Document) RenderFrame() {
 	root.StyleSetWidth(float32(cols))
 
 	// Build our render tree
-	tree(root, Fragment(d.els...), rows, cols)
+	tree(root, Fragment(d.els...), rows, cols, false)
 
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)

@@ -18,6 +18,7 @@ func tree(
 	parent *flex.Node,
 	c Component,
 	termRows, termCols uint,
+	finalize bool,
 ) {
 	// Don't do anything with no component
 	if c == nil {
@@ -27,7 +28,7 @@ func tree(
 	// Fragments don't create a node
 	if c, ok := c.(*fragmentComponent); ok {
 		for _, c := range c.List {
-			tree(parent, c, termRows, termCols)
+			tree(parent, c, termRows, termCols, finalize)
 		}
 
 		return
@@ -42,6 +43,15 @@ func tree(
 		node.Context = &parentContext{
 			Component: c,
 			Finalized: true,
+		}
+
+		finalize = true
+	}
+
+	// Finalize
+	if finalize {
+		if c, ok := c.(ComponentFinalizer); ok {
+			c.Finalize()
 		}
 	}
 
@@ -64,7 +74,7 @@ func tree(
 
 	default:
 		// If this is not terminal then we nest.
-		tree(node, c.Body(), termRows, termCols)
+		tree(node, c.Body(), termRows, termCols, finalize)
 	}
 
 }
