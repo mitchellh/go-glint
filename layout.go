@@ -78,8 +78,6 @@ func measureNode(
 		Height: float32(countLines(ctx.Text)),
 	}
 
-	// TODO: wrapping
-
 	return ctx.Size
 }
 

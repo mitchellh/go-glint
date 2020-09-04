@@ -33,7 +33,7 @@ func (el *ProgressElement) Body() Component {
 		el.ProgressBar.SetWidth(int(cols))
 
 		//return el.ProgressBar.String()
-		return strings.TrimSpace(strings.Repeat(el.ProgressBar.String()+"\n", 15))
+		return strings.TrimSpace(strings.Repeat(el.ProgressBar.String()+"\n", 5))
 	})
 }
 

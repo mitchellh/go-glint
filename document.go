@@ -102,19 +102,20 @@ func (d *Document) RenderFrame() {
 		}
 	}
 
-	// We always have one less row than the size of the window because
-	// we draw a newline at the end of every render.
-	// NOTE(mitchellh): This is very fixable and we probably want to one day
-	rows -= 1
-
 	// Remove what we last drew. If what we last drew is greater than the number
 	// of rows then we need to clear the screen.
-	if d.lastCount <= rows {
-		for i := uint(0); i < d.lastCount; i++ {
-			fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
+	if d.lastCount > 0 {
+		if d.lastCount <= rows {
+			// Delete current line
+			fmt.Fprint(d.w, b.Column(0).EraseLine(aec.EraseModes.All).ANSI)
+
+			// Delete n lines above
+			for i := uint(0); i < d.lastCount-1; i++ {
+				fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
+			}
+		} else {
+			fmt.Fprint(d.w, b.EraseDisplay(aec.EraseModes.All).EraseDisplay(aec.EraseMode(3)).Position(0, 0).ANSI)
 		}
-	} else {
-		fmt.Fprint(d.w, b.EraseDisplay(aec.EraseModes.All).EraseDisplay(aec.EraseMode(3)).Position(0, 0).ANSI)
 	}
 
 	// Setup our root display which is our terminal. We don't set a height here
@@ -154,7 +155,7 @@ func (d *Document) RenderFrame() {
 	}
 
 	// Render the tree
-	renderTree(d.w, root)
+	renderTree(d.w, root, -1)
 
 	// Store how much we drew
 	d.lastCount = uint(root.LayoutGetHeight())

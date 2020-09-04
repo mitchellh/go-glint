@@ -55,11 +55,20 @@ func tree(
 
 }
 
-func renderTree(w io.Writer, parent *flex.Node) {
+func renderTree(w io.Writer, parent *flex.Node, lastRow int) {
 	for _, child := range parent.Children {
+		// If we're on a different row than last time then we draw a newline.
+		thisRow := int(child.LayoutGetTop())
+		if lastRow >= 0 && thisRow > lastRow {
+			fmt.Fprintln(w)
+		}
+		lastRow = thisRow
+
+		// Get our node context. If we don't have one then we're a container
+		// and we render below.
 		ctx, ok := child.Context.(*nodeContext)
 		if !ok {
-			renderTree(w, child)
+			renderTree(w, child, lastRow)
 			continue
 		}
 
@@ -73,19 +82,18 @@ func renderTree(w io.Writer, parent *flex.Node) {
 		width := child.LayoutGetWidth()
 		if height < ctx.Size.Height || width < ctx.Size.Width {
 			// Rerender into it
-			text = ctx.Component.render(uint(height), uint(width))
+			measureNode(child,
+				width, flex.MeasureModeAtMost,
+				height, flex.MeasureModeAtMost,
+			)
+			text = ctx.Text
 
 			// Truncate, no-ops if it fits.
 			text = truncateTextHeight(text, int(height))
 		}
 
+		// Draw our text
 		fmt.Fprint(w, text)
-
-		// If the text didn't end with a newline then we add one since
-		// all elements here are block-level.
-		if len(text) > 0 && text[len(text)-1] != '\n' {
-			fmt.Fprintln(w)
-		}
 	}
 }
 
