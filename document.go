@@ -117,13 +117,13 @@ func (d *Document) RenderFrame() {
 		fmt.Fprint(d.w, b.EraseDisplay(aec.EraseModes.All).EraseDisplay(aec.EraseMode(3)).Position(0, 0).ANSI)
 	}
 
-	// Setup our root display which is our terminal
+	// Setup our root display which is our terminal. We don't set a height here
+	// because we assume that the terminal has scrollback that the user can
+	// use. If users want to lock into the terminal height they can use
+	// a custom layout.
 	config := flex.NewConfig()
 	root := flex.NewNodeWithConfig(config)
 	root.StyleSetWidth(float32(cols))
-	//root.StyleSetMaxHeight(float32(rows))
-	//root.StyleSetMaxHeight(5)
-	root.StyleSetOverflow(flex.OverflowHidden)
 
 	// Build our render tree
 	tree(root, Fragment(d.els...), rows, cols)
