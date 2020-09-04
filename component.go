@@ -36,17 +36,6 @@ type ComponentFinalizer interface {
 	Finalize()
 }
 
-// ComponentTerminalSizer can be implemented to receive the terminal size.
-// See the function docs for more information.
-type ComponentTerminalSizer interface {
-	Component
-
-	// SetTerminalSize is called with the full terminal size. This may
-	// exceed the size given by Render in certain cases. This will be called
-	// before Render and Layout.
-	SetTerminalSize(rows, cols uint)
-}
-
 // componentLayout can be implemented to set custom layout settings
 // for the component. This can only be implemented by internal components
 // since we use an internal library.

@@ -45,11 +45,6 @@ func tree(
 		}
 	}
 
-	// Notify of the terminal size
-	if c, ok := c.(ComponentTerminalSizer); ok {
-		c.SetTerminalSize(termRows, termCols)
-	}
-
 	// Setup a custom layout
 	if c, ok := c.(componentLayout); ok {
 		c.Layout().Apply(node)
