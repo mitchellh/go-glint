@@ -10,6 +10,8 @@ import (
 	"github.com/mitchellh/go-dynamic-cli/internal/flex"
 )
 
+// debugTree if true will output the flexbox calculations and exit
+// with os.Exit. This is just used for internal testing.
 var debugTree = false
 
 func tree(
