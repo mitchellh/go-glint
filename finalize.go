@@ -1,6 +1,7 @@
 package glint
 
 // Finalize reutrns a component that will finalize the input component.
+// See ComponentFinalizer for documentation on what finalization means.
 func Finalize(c Component) Component {
 	return &finalizedComponent{
 		Component: c,

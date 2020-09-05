@@ -12,8 +12,7 @@ import (
 func main() {
 	var d glint.Document
 	d.SetOutput(os.Stdout)
-	d.Add(
-		glint.Finalize(dc.Stopwatch(time.Now())),
+	d.Append(
 		dc.Layout(
 			dc.Spinner(),
 			dc.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),

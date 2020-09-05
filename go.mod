@@ -1,4 +1,4 @@
-module github.com/mitchellh/go-dynamic-cli
+module github.com/mitchellh/go-glint
 
 go 1.14
 

@@ -15,7 +15,16 @@ import (
 	"github.com/mitchellh/go-glint/internal/flex"
 )
 
-// TODO: docs
+// Document is the primary structure for managing and drawing components.
+//
+// A document represents a terminal window or session. The output can be set and
+// components can be added, rendered, and drawn. All the methods on a Document
+// are thread-safe unless otherwise documented. This allows you to draw,
+// add components, replace components, etc. all while the render loop is active.
+//
+// Currently, this can only render directly to an io.Writer that expects to
+// be a terminal session. In the future, we'll further abstract the concept
+// of a "renderer" so that rendering can be done to other mediums as well.
 type Document struct {
 	mu          sync.Mutex
 	w           io.Writer
@@ -27,12 +36,17 @@ type Document struct {
 }
 
 // SetOutput sets the location where rendering will be drawn.
+//
+// This should be a tty that supports ANSI escape sequences. In the future
+// we'll better handle scenarios where ANSI escape sequences aren't supported.
 func (d *Document) SetOutput(w io.Writer) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.w = w
 }
 
+// SetSize manually sets the size of the terminal window. If this is unset
+// then we will automatically determine the terminal window size.
 func (d *Document) SetSize(rows, cols uint) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -40,22 +54,28 @@ func (d *Document) SetSize(rows, cols uint) {
 	d.cols = cols
 }
 
+// SetRefreshRate sets the rate at which output is rendered.
 func (d *Document) SetRefreshRate(dur time.Duration) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.refreshRate = dur
 }
 
-func (d *Document) Add(el ...Component) {
+// Append appends components to the document.
+func (d *Document) Append(el ...Component) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.els = append(d.els, el...)
 }
 
 // Render starts a render loop that continues to render until the
-// context is cancelled.
+// context is cancelled. This will render at the configured refresh rate.
+// If the refresh rate is changed, it will not affect an active render loop.
+// You must cancel and restart the render loop.
 func (d *Document) Render(ctx context.Context) {
+	d.mu.Lock()
 	dur := d.refreshRate
+	d.mu.Unlock()
 	if dur == 0 {
 		dur = time.Second / 12
 	}
@@ -131,28 +151,6 @@ func (d *Document) RenderFrame() {
 
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
-
-	// Debug. Flip this to true to see flexbox calculations.
-	if false {
-		fmt.Printf("rows: %d\n", rows)
-		fmt.Printf("cols: %d\n", cols)
-		fmt.Printf("root left: %f\n", root.LayoutGetLeft())     // 0
-		fmt.Printf("root top: %f\n", root.LayoutGetTop())       // 0
-		fmt.Printf("root width: %f\n", root.LayoutGetWidth())   // 200
-		fmt.Printf("root height: %f\n", root.LayoutGetHeight()) // 200
-		for i := 0; ; i++ {
-			child := root.GetChild(i)
-			if child == nil {
-				break
-			}
-
-			fmt.Printf("child %d left: %f\n", i, child.LayoutGetLeft())     // 0
-			fmt.Printf("child %d top: %f\n", i, child.LayoutGetTop())       // 0
-			fmt.Printf("child %d width: %f\n", i, child.LayoutGetWidth())   // 200
-			fmt.Printf("child %d height: %f\n", i, child.LayoutGetHeight()) // 200
-		}
-		os.Exit(1)
-	}
 
 	// Render the tree
 	renderTree(d.w, root, -1)
