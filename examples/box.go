@@ -13,17 +13,17 @@ func main() {
 	var d glint.Document
 	d.SetOutput(os.Stdout)
 	d.Append(
-		gc.Layout(
+		glint.Layout(
 			gc.Spinner(),
-			gc.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),
-			gc.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
+			glint.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),
+			glint.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
 		).Row(),
-		gc.Layout(
+		glint.Layout(
 			gc.Spinner(),
-			gc.Layout(glint.Text("Preparing execution environment...")).MarginLeft(1),
-			gc.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
+			glint.Layout(glint.Text("Preparing execution environment...")).MarginLeft(1),
+			glint.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
 		).MarginLeft(2).Row(),
-		gc.Layout(
+		glint.Layout(
 			glint.Text("Preparing volume to work with..."),
 		).MarginLeft(4),
 	)
