@@ -1,4 +1,4 @@
-package dynamiccli
+package glint
 
 import (
 	"testing"

@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/mitchellh/go-dynamic-cli"
+	"github.com/mitchellh/go-glint"
 	"github.com/tj/go-spin"
 )
 
@@ -21,6 +21,6 @@ type SpinnerComponent struct {
 	s *spin.Spinner
 }
 
-func (c *SpinnerComponent) Body() dynamiccli.Component {
-	return dynamiccli.Text(c.s.Next())
+func (c *SpinnerComponent) Body() glint.Component {
+	return glint.Text(c.s.Next())
 }

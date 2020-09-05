@@ -1,4 +1,4 @@
-package dynamiccli
+package glint
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/morikuni/aec"
 	sshterm "golang.org/x/crypto/ssh/terminal"
 
-	"github.com/mitchellh/go-dynamic-cli/internal/flex"
+	"github.com/mitchellh/go-glint/internal/flex"
 )
 
 // TODO: docs

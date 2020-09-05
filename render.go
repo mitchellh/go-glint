@@ -1,4 +1,4 @@
-package dynamiccli
+package glint
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mitchellh/go-dynamic-cli/internal/flex"
+	"github.com/mitchellh/go-glint/internal/flex"
 )
 
 // debugTree if true will output the flexbox calculations and exit

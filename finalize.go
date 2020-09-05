@@ -1,4 +1,4 @@
-package dynamiccli
+package glint
 
 // Finalize reutrns a component that will finalize the input component.
 func Finalize(c Component) Component {

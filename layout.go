@@ -1,9 +1,9 @@
-package dynamiccli
+package glint
 
 import (
 	"strings"
 
-	"github.com/mitchellh/go-dynamic-cli/internal/flex"
+	"github.com/mitchellh/go-glint/internal/flex"
 )
 
 func measureNode(

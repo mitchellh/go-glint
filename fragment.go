@@ -1,4 +1,4 @@
-package dynamiccli
+package glint
 
 func Fragment(c ...Component) *fragmentComponent {
 	return &fragmentComponent{List: c}

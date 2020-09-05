@@ -1,17 +1,17 @@
 package components
 
 import (
-	"github.com/mitchellh/go-dynamic-cli"
-	"github.com/mitchellh/go-dynamic-cli/internal/flex"
-	"github.com/mitchellh/go-dynamic-cli/internal/layout"
+	"github.com/mitchellh/go-glint"
+	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/internal/layout"
 )
 
-func Layout(inner ...dynamiccli.Component) *LayoutComponent {
+func Layout(inner ...glint.Component) *LayoutComponent {
 	return &LayoutComponent{inner: inner, builder: &layout.Builder{}}
 }
 
 type LayoutComponent struct {
-	inner   []dynamiccli.Component
+	inner   []glint.Component
 	builder *layout.Builder
 }
 
@@ -29,8 +29,8 @@ func (c *LayoutComponent) MarginLeft(x int) *LayoutComponent {
 	return c
 }
 
-func (c *LayoutComponent) Body() dynamiccli.Component {
-	return dynamiccli.Fragment(c.inner...)
+func (c *LayoutComponent) Body() glint.Component {
+	return glint.Fragment(c.inner...)
 }
 
 func (c *LayoutComponent) Layout() *layout.Builder {

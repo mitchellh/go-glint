@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
-	"github.com/mitchellh/go-dynamic-cli"
+	"github.com/mitchellh/go-glint"
 )
 
 // ProgressElement renders a progress bar. This wraps the cheggaaa/pb package
@@ -23,14 +23,14 @@ func Progress(total int) *ProgressElement {
 	}
 }
 
-func (el *ProgressElement) Body() dynamiccli.Component {
+func (el *ProgressElement) Body() glint.Component {
 	// If we have no progress bar render nothing.
 	if el.ProgressBar == nil {
 		return nil
 	}
 
 	// Write the current progress
-	return dynamiccli.TextFunc(func(rows, cols uint) string {
+	return glint.TextFunc(func(rows, cols uint) string {
 		el.ProgressBar.SetWidth(int(cols))
 
 		//return el.ProgressBar.String()

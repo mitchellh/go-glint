@@ -1,7 +1,7 @@
-package dynamiccli
+package glint
 
 import (
-	"github.com/mitchellh/go-dynamic-cli/internal/layout"
+	"github.com/mitchellh/go-glint/internal/layout"
 )
 
 // Components are the individual items that are rendered within a document.

@@ -5,15 +5,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/mitchellh/go-dynamic-cli"
+	"github.com/mitchellh/go-glint"
 )
 
 func main() {
 	// Create a progress bar and just render it periodically
-	p := dynamiccli.Progress(100)
+	p := glint.Progress(100)
 
 	// Create a text element that is updated with the time
-	timeEl := dynamiccli.Text("")
+	timeEl := glint.Text("")
 	go func() {
 		for {
 			time.Sleep(50 * time.Millisecond)
@@ -30,13 +30,13 @@ func main() {
 		}
 	}()
 
-	var d dynamiccli.Document
+	var d glint.Document
 	d.SetOutput(os.Stdout)
 	d.Add(
-		dynamiccli.Text("Fixed to top"),
+		glint.Text("Fixed to top"),
 		p,
 		timeEl,
-		dynamiccli.Text("All with flexbox!"),
+		glint.Text("All with flexbox!"),
 	)
 	d.Render(context.Background())
 }

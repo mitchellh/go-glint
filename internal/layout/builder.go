@@ -1,7 +1,7 @@
 package layout
 
 import (
-	"github.com/mitchellh/go-dynamic-cli/internal/flex"
+	"github.com/mitchellh/go-glint/internal/flex"
 )
 
 type SetFunc func(n *flex.Node)
