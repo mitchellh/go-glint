@@ -6,24 +6,24 @@ import (
 	"time"
 
 	"github.com/mitchellh/go-glint"
-	dc "github.com/mitchellh/go-glint/components"
+	gc "github.com/mitchellh/go-glint/components"
 )
 
 func main() {
 	var d glint.Document
 	d.SetOutput(os.Stdout)
 	d.Append(
-		dc.Layout(
-			dc.Spinner(),
-			dc.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),
-			dc.Layout(dc.Stopwatch(time.Now())).MarginLeft(1),
+		gc.Layout(
+			gc.Spinner(),
+			gc.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),
+			gc.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
 		).Row(),
-		dc.Layout(
-			dc.Spinner(),
-			dc.Layout(glint.Text("Preparing execution environment...")).MarginLeft(1),
-			dc.Layout(dc.Stopwatch(time.Now())).MarginLeft(1),
+		gc.Layout(
+			gc.Spinner(),
+			gc.Layout(glint.Text("Preparing execution environment...")).MarginLeft(1),
+			gc.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
 		).MarginLeft(2).Row(),
-		dc.Layout(
+		gc.Layout(
 			glint.Text("Preparing volume to work with..."),
 		).MarginLeft(4),
 	)
