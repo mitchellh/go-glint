@@ -104,3 +104,69 @@ func TestTruncateTextHeight(t *testing.T) {
 		})
 	}
 }
+
+func TestClampTextWidth(t *testing.T) {
+	cases := []struct {
+		Name     string
+		Input    string
+		Width    int
+		Expected string
+	}{
+		{
+			"empty",
+			"",
+			10,
+			"",
+		},
+
+		{
+			"width zero",
+			"hello\nworld\n",
+			0,
+			"",
+		},
+
+		{
+			"width fits",
+			"hello world\ni fit!",
+			100,
+			"hello world\ni fit!",
+		},
+
+		{
+			"clamped one line",
+			"hello world",
+			5,
+			"hello",
+		},
+
+		{
+			"clamped one line ends in newline",
+			"hello world\n",
+			5,
+			"hello\n",
+		},
+
+		{
+			"fits ends in newline",
+			"hello\n",
+			5,
+			"hello\n",
+		},
+
+		{
+			"clamped both lines",
+			"hello world\ni fit!",
+			5,
+			"hello\ni fit",
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.Name, func(t *testing.T) {
+			require := require.New(t)
+			actual := clampTextWidth(tt.Input, tt.Width)
+			require.Equal(tt.Expected, actual)
+		})
+	}
+}

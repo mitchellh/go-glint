@@ -1,6 +1,7 @@
 package glint
 
 import (
+	"math"
 	"strings"
 
 	"github.com/mitchellh/go-glint/internal/flex"
@@ -47,6 +48,16 @@ func MeasureTextNode(
 	ctx.Size = flex.Size{
 		Width:  float32(longestLine(ctx.Text)),
 		Height: float32(countLines(ctx.Text)),
+	}
+
+	// Truncate height if we have a limit. This is a no-op if it fits.
+	if !math.IsNaN(float64(height)) && height > 0 {
+		ctx.Text = truncateTextHeight(ctx.Text, int(height))
+	}
+
+	// Truncate width if we have a limit. This is a no-op if it fits.
+	if !math.IsNaN(float64(width)) && width > 0 {
+		ctx.Text = clampTextWidth(ctx.Text, int(width))
 	}
 
 	return ctx.Size
@@ -108,4 +119,63 @@ func truncateTextHeight(s string, height int) string {
 
 	// Subtract one here because the idx is the last "\n" char
 	return s[:idx-1]
+}
+
+// clampTextWidth cuts off any lines in s that are longer than width
+// characters (not including the newline).
+//
+// This currently clamps by bytes and not runes, so this may result in
+// weird characters for multi-byte characters. This needs to be fixed.
+func clampTextWidth(s string, width int) string {
+	// If our width is zero just return empty
+	if width == 0 {
+		return ""
+	}
+
+	// NOTE(mitchellh): This loop is really horrible. It is unclear, weirdly
+	// repetitive, and just aesthetically gross. But the tests pass and we have
+	// good test cases on this. Let's fix this later.
+	var b *strings.Builder
+	total := 0
+	original := s
+	for {
+		end := false
+		idx := strings.IndexByte(s, '\n')
+		if idx == -1 {
+			idx = len(s)
+			end = true
+		}
+
+		if idx > width {
+			if b == nil {
+				b = &strings.Builder{}
+				if total > 0 {
+					b.WriteString(original[:total])
+					b.WriteByte('\n')
+				}
+			}
+
+			b.WriteString(s[:width])
+			if !end {
+				b.WriteByte('\n')
+			}
+		} else if idx > 0 {
+			if b != nil {
+				b.WriteString(s[:idx+1])
+			}
+		}
+
+		if end {
+			break
+		}
+
+		total += idx
+		s = s[idx+1:]
+	}
+
+	if b == nil {
+		return original
+	}
+
+	return b.String()
 }
