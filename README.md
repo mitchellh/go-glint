@@ -8,7 +8,10 @@ and more.
 
 **API Status: Unstable.** We're still actively working on the API and
 may change it in backwards incompatible ways. See the roadmap section in
-particular for work that may impact the API.
+particular for work that may impact the API. In particular, we're currently
+integrating this library into [a new HashiCorp project](https://twitter.com/mitchellh/status/1283093598922133504)
+and the experience of using this library in the real world will likely drive major
+changes.
 
 ## Roadmap
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"github.com/mitchellh/go-glint"
@@ -10,8 +9,7 @@ import (
 )
 
 func main() {
-	var d glint.Document
-	d.SetOutput(os.Stdout)
+	d := glint.New()
 	d.Append(
 		glint.Layout(
 			gc.Spinner(),

@@ -2,15 +2,9 @@ package glint
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"os"
 	"sync"
 	"time"
-
-	"github.com/creack/pty"
-	"github.com/morikuni/aec"
-	sshterm "golang.org/x/crypto/ssh/terminal"
 
 	"github.com/mitchellh/go-glint/internal/flex"
 )
@@ -27,31 +21,29 @@ import (
 // of a "renderer" so that rendering can be done to other mediums as well.
 type Document struct {
 	mu          sync.Mutex
-	w           io.Writer
-	cols        uint
-	rows        uint
+	r           Renderer
 	els         []Component
 	refreshRate time.Duration
-	lastHeight  uint
+	prevRoot    *flex.Node
 }
 
-// SetOutput sets the location where rendering will be drawn.
-//
-// This should be a tty that supports ANSI escape sequences. In the future
-// we'll better handle scenarios where ANSI escape sequences aren't supported.
-func (d *Document) SetOutput(w io.Writer) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	d.w = w
+// New returns a Document that will output to stdout.
+func New() *Document {
+	var d Document
+	d.SetRenderer(&TerminalRenderer{
+		Output: os.Stdout,
+	})
+
+	return &d
 }
 
-// SetSize manually sets the size of the terminal window. If this is unset
-// then we will automatically determine the terminal window size.
-func (d *Document) SetSize(rows, cols uint) {
+// SetRenderer sets the renderer to use. If this isn't set then Render
+// will do nothing and return immediately. Changes to this will have no
+// impact on active render loops.
+func (d *Document) SetRenderer(r Renderer) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.rows = rows
-	d.cols = cols
+	d.r = r
 }
 
 // SetRefreshRate sets the rate at which output is rendered.
@@ -104,56 +96,22 @@ func (d *Document) RenderFrame() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	// If we don't have a writer set, then don't render anything.
-	if d.w == nil {
+	// If we don't have a renderer set, then don't render anything.
+	if d.r == nil {
 		return
 	}
 
-	// Detect if we had a window size change
-	cols := d.cols
-	rows := d.rows
-	if cols == 0 || rows == 0 {
-		if f, ok := d.w.(*os.File); ok && sshterm.IsTerminal(int(f.Fd())) {
-			ws, err := pty.GetsizeFull(f)
-			if err == nil {
-				rows = uint(ws.Rows)
-				cols = uint(ws.Cols)
-			}
-		}
-	}
-
-	// Remove what we last drew. If what we last drew is greater than the number
-	// of rows then we need to clear the screen.
-	if d.lastHeight > 0 {
-		if d.lastHeight <= rows {
-			// Delete current line
-			fmt.Fprint(d.w, b.Column(0).EraseLine(aec.EraseModes.All).ANSI)
-
-			// Delete n lines above
-			for i := uint(0); i < d.lastHeight-1; i++ {
-				fmt.Fprint(d.w, b.Up(1).Column(0).EraseLine(aec.EraseModes.All).ANSI)
-			}
-		} else {
-			fmt.Fprint(d.w, b.EraseDisplay(aec.EraseModes.All).EraseDisplay(aec.EraseMode(3)).Position(0, 0).ANSI)
-		}
-	}
-
-	// Setup our root display which is our terminal. We don't set a height here
-	// because we assume that the terminal has scrollback that the user can
-	// use. If users want to lock into the terminal height they can use
-	// a custom layout.
-	config := flex.NewConfig()
-	root := flex.NewNodeWithConfig(config)
-	root.StyleSetWidth(float32(cols))
+	// Setup our root node
+	root := d.r.LayoutRoot()
 
 	// Build our render tree
-	tree(root, Fragment(d.els...), rows, cols, false)
+	tree(root, Fragment(d.els...), false)
 
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
 
 	// Render the tree
-	renderTree(d.w, root, -1)
+	d.r.RenderRoot(root, d.prevRoot)
 
 	// Store how much we drew
 	height := uint(root.LayoutGetHeight())
@@ -182,13 +140,15 @@ func (d *Document) RenderFrame() {
 		finalIdx = i
 	}
 	if finalIdx >= 0 {
+		// Change our elements
 		els := d.els[finalIdx+1:]
 		d.els = make([]Component, len(els))
 		copy(d.els, els)
+
+		// Reset the height on the root so that it reflects this change
+		root.Layout.Dimensions[flex.DimensionHeight] = float32(height)
 	}
 
-	// Store our last height which has now been processed for finalizations.
-	d.lastHeight = height
+	// Store our previous root
+	d.prevRoot = root
 }
-
-var b = aec.EmptyBuilder

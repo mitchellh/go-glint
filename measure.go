@@ -6,7 +6,30 @@ import (
 	"github.com/mitchellh/go-glint/internal/flex"
 )
 
-func measureNode(
+// TextNodeContext is the *flex.Node.Context set for all *TextComponent flex nodes.
+type TextNodeContext struct {
+	// C is the TextComponent represented.
+	C *TextComponent
+
+	// Text is the rendered text. This is populated after MeasureTextNode
+	// is called. Note that this may not fit in the final layout calculations
+	// since it is populated on measurement.
+	Text string
+
+	// Size is the measurement size returned. This can be used to determine
+	// if the text above fits in the final size. Text is guaranteed to fit
+	// in this size.
+	Size flex.Size
+}
+
+// MeasureTextNode implements flex.MeasureFunc and returns the measurements
+// for the given node only if the node represents a TextComponent. This is
+// the MeasureFunc that is typically used for renderers since all component
+// trees terminate in a text node.
+//
+// The flex.Node must have Context set to TextNodeContext. After calling this,
+// fields such as Text and Size will be populated on the node.
+func MeasureTextNode(
 	node *flex.Node,
 	width float32,
 	widthMode flex.MeasureMode,
@@ -14,13 +37,13 @@ func measureNode(
 	heightMode flex.MeasureMode,
 ) flex.Size {
 	// If we have no context set then we use the full spacing.
-	ctx, ok := node.Context.(*nodeContext)
+	ctx, ok := node.Context.(*TextNodeContext)
 	if !ok || ctx == nil {
 		return flex.Size{Width: width, Height: height}
 	}
 
 	// Otherwise, we have to render this.
-	ctx.Text = ctx.Component.render(uint(height), uint(width))
+	ctx.Text = ctx.C.Render(uint(height), uint(width))
 	ctx.Size = flex.Size{
 		Width:  float32(longestLine(ctx.Text)),
 		Height: float32(countLines(ctx.Text)),

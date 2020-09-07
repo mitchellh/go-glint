@@ -26,7 +26,7 @@ func (el *TextComponent) Body() Component {
 	return nil
 }
 
-func (el *TextComponent) render(rows, cols uint) string {
+func (el *TextComponent) Render(rows, cols uint) string {
 	if el.f != nil {
 		return el.f(rows, cols)
 	}
