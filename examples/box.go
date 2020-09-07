@@ -13,7 +13,10 @@ func main() {
 	d.Append(
 		glint.Layout(
 			gc.Spinner(),
-			glint.Layout(glint.Text("Build site and validate links...", glint.Color("green"))).MarginLeft(1),
+			glint.Style(
+				glint.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),
+				glint.Color("green"),
+			),
 			glint.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
 		).Row(),
 		glint.Layout(

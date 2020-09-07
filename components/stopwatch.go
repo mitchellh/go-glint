@@ -1,6 +1,7 @@
 package components
 
 import (
+	"context"
 	"time"
 
 	"github.com/mitchellh/go-glint"
@@ -17,6 +18,6 @@ type StopwatchComponent struct {
 	start time.Time
 }
 
-func (c *StopwatchComponent) Body() glint.Component {
+func (c *StopwatchComponent) Body(context.Context) glint.Component {
 	return glint.Text(time.Now().Sub(c.start).Truncate(100 * time.Millisecond).String())
 }

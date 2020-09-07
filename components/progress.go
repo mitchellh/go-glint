@@ -1,6 +1,8 @@
 package components
 
 import (
+	"context"
+
 	"github.com/cheggaaa/pb/v3"
 	"github.com/mitchellh/go-glint"
 )
@@ -21,7 +23,7 @@ func Progress(total int) *ProgressElement {
 	}
 }
 
-func (el *ProgressElement) Body() glint.Component {
+func (el *ProgressElement) Body(context.Context) glint.Component {
 	// If we have no progress bar render nothing.
 	if el.ProgressBar == nil {
 		return nil

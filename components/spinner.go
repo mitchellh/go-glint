@@ -1,6 +1,8 @@
 package components
 
 import (
+	"context"
+
 	"github.com/mitchellh/go-glint"
 	"github.com/tj/go-spin"
 )
@@ -21,6 +23,6 @@ type SpinnerComponent struct {
 	s *spin.Spinner
 }
 
-func (c *SpinnerComponent) Body() glint.Component {
+func (c *SpinnerComponent) Body(context.Context) glint.Component {
 	return glint.Text(c.s.Next())
 }

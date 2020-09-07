@@ -1,6 +1,7 @@
 package glint
 
 import (
+	"context"
 	"math"
 	"strings"
 
@@ -11,6 +12,9 @@ import (
 type TextNodeContext struct {
 	// C is the TextComponent represented.
 	C *TextComponent
+
+	// The context at the time layout was done
+	Context context.Context
 
 	// Text is the rendered text. This is populated after MeasureTextNode
 	// is called. Note that this may not fit in the final layout calculations

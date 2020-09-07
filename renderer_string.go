@@ -63,7 +63,7 @@ func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow 
 		} else {
 			text := ctx.Text
 			if color {
-				text = ctx.C.colorize(text)
+				text = styleRender(ctx.Context, text)
 			}
 
 			// Draw our text

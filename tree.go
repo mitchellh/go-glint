@@ -25,6 +25,7 @@ func tree(
 		}
 
 		tree(ctx, parent, c.inner, finalize)
+		return
 
 	case *fragmentComponent:
 		for _, c := range c.List {
@@ -62,7 +63,7 @@ func tree(
 
 	switch c := c.(type) {
 	case *TextComponent:
-		node.Context = &TextNodeContext{C: c}
+		node.Context = &TextNodeContext{C: c, Context: ctx}
 		node.StyleSetFlexShrink(1)
 		node.StyleSetFlexGrow(0)
 		node.StyleSetFlexDirection(flex.FlexDirectionRow)
