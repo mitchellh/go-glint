@@ -13,7 +13,10 @@ import (
 	"github.com/mitchellh/go-glint/internal/flex"
 )
 
+// TerminalRenderer renders output to a terminal. It expects the Output set
+// to be a TTY. This will use ANSI escape codes to redraw.
 type TerminalRenderer struct {
+	// Output is where to write to. This should be a TTY.
 	Output io.Writer
 
 	// Rows, Cols are the dimensions of the terminal. If these are not set
