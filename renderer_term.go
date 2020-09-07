@@ -8,6 +8,7 @@ import (
 	"github.com/creack/pty"
 	"github.com/morikuni/aec"
 	sshterm "golang.org/x/crypto/ssh/terminal"
+	"gopkg.in/gookit/color.v1"
 
 	"github.com/mitchellh/go-glint/internal/flex"
 )
@@ -85,17 +86,11 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 
 	// Draw
 	var sr StringRenderer
-	sr.renderTree(w, root, -1)
+	sr.renderTree(w, root, -1, color.IsSupportColor())
 }
 
 type termRootContext struct {
 	Rows, Cols uint
-}
-
-type termLeafContext struct {
-	Component *TextComponent
-	Text      string
-	Size      flex.Size
 }
 
 var b = aec.EmptyBuilder

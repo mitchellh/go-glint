@@ -42,10 +42,10 @@ func (r *StringRenderer) RenderRoot(root, prev *flex.Node) {
 	r.Builder.Reset()
 
 	// Draw
-	r.renderTree(r.Builder, root, -1)
+	r.renderTree(r.Builder, root, -1, false)
 }
 
-func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow int) {
+func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow int, color bool) {
 	var buf bytes.Buffer
 	for _, child := range parent.Children {
 		// If we're on a different row than last time then we draw a newline.
@@ -59,10 +59,15 @@ func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow 
 		// and we render below.
 		ctx, ok := child.Context.(*TextNodeContext)
 		if !ok {
-			r.renderTree(&buf, child, lastRow)
+			r.renderTree(&buf, child, lastRow, color)
 		} else {
+			text := ctx.Text
+			if color {
+				text = ctx.C.colorize(text)
+			}
+
 			// Draw our text
-			fmt.Fprint(&buf, ctx.Text)
+			fmt.Fprint(&buf, text)
 		}
 	}
 
