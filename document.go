@@ -105,7 +105,7 @@ func (d *Document) RenderFrame() {
 	root := d.r.LayoutRoot()
 
 	// Build our render tree
-	tree(root, Fragment(d.els...), false)
+	tree(context.Background(), root, Fragment(d.els...), false)
 
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)

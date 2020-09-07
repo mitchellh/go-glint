@@ -1,6 +1,8 @@
 package glint
 
 import (
+	"context"
+
 	"github.com/mitchellh/go-glint/internal/layout"
 )
 
@@ -9,11 +11,15 @@ type Component interface {
 	// Body returns the body of this component. This can be another custom
 	// component or a standard component such as Text.
 	//
+	// The context parameter is used to send parameters across multiple
+	// components. It should not be used for timeouts; Body should aim to
+	// not block ever since this can block the render loop.
+	//
 	// Components are highly encouraged to support finalization (see
 	// ComponentFinalizer). Components can finalize early by wrapping
 	// their body in a Finalize built-in component. Finalization allows
 	// the renderer to highly optimize output.
-	Body() Component
+	Body(context.Context) Component
 }
 
 // ComponentFinalizer allows components to be notified they are going to
@@ -53,4 +59,4 @@ type componentLayout interface {
 // as special cases.
 type terminalComponent struct{}
 
-func (terminalComponent) Body() Component { return nil }
+func (terminalComponent) Body(context.Context) Component { return nil }

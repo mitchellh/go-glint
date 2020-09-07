@@ -1,6 +1,8 @@
 package glint
 
 import (
+	"context"
+
 	"gopkg.in/gookit/color.v1"
 )
 
@@ -32,7 +34,7 @@ func TextFunc(f func(rows, cols uint) string, opts ...TextOption) *TextComponent
 	return c
 }
 
-func (el *TextComponent) Body() Component {
+func (el *TextComponent) Body(context.Context) Component {
 	return nil
 }
 

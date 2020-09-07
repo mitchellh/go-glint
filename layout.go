@@ -1,6 +1,8 @@
 package glint
 
 import (
+	"context"
+
 	"github.com/mitchellh/go-glint/internal/flex"
 	"github.com/mitchellh/go-glint/internal/layout"
 )
@@ -60,7 +62,7 @@ func (c *LayoutComponent) PaddingRight(x int) *LayoutComponent {
 }
 
 // Component implementation
-func (c *LayoutComponent) Body() Component {
+func (c *LayoutComponent) Body(context.Context) Component {
 	return Fragment(c.inner...)
 }
 

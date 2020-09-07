@@ -1,10 +1,13 @@
 package glint
 
 import (
+	"context"
+
 	"github.com/mitchellh/go-glint/internal/flex"
 )
 
 func tree(
+	ctx context.Context,
 	parent *flex.Node,
 	c Component,
 	finalize bool,
@@ -15,9 +18,17 @@ func tree(
 	}
 
 	// Fragments don't create a node
-	if c, ok := c.(*fragmentComponent); ok {
+	switch c := c.(type) {
+	case *contextComponent:
+		for i := 0; i < len(c.pairs); i += 2 {
+			ctx = context.WithValue(ctx, c.pairs[i], c.pairs[i+1])
+		}
+
+		tree(ctx, parent, c.inner, finalize)
+
+	case *fragmentComponent:
 		for _, c := range c.List {
-			tree(parent, c, finalize)
+			tree(ctx, parent, c, finalize)
 		}
 
 		return
@@ -59,7 +70,7 @@ func tree(
 
 	default:
 		// If this is not terminal then we nest.
-		tree(node, c.Body(), finalize)
+		tree(ctx, node, c.Body(ctx), finalize)
 	}
 
 }
