@@ -1,7 +1,9 @@
 package glint
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/mitchellh/go-glint/internal/flex"
@@ -40,42 +42,47 @@ func (r *StringRenderer) RenderRoot(root, prev *flex.Node) {
 	r.Builder.Reset()
 
 	// Draw
-	r.renderTree(root, -1)
+	r.renderTree(r.Builder, root, -1)
 }
 
-func (r *StringRenderer) renderTree(parent *flex.Node, lastRow int) {
+func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow int) {
+	var buf bytes.Buffer
 	for _, child := range parent.Children {
 		// If we're on a different row than last time then we draw a newline.
 		thisRow := int(child.LayoutGetTop())
 		if lastRow >= 0 && thisRow > lastRow {
-			r.Builder.WriteByte('\n')
+			buf.WriteByte('\n')
 		}
 		lastRow = thisRow
-
-		// If we have a left margin, draw that first.
-		if v := int(child.LayoutGetMargin(flex.EdgeLeft)); v > 0 {
-			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
-		}
-		if v := int(child.LayoutGetPadding(flex.EdgeLeft)); v > 0 {
-			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
-		}
 
 		// Get our node context. If we don't have one then we're a container
 		// and we render below.
 		ctx, ok := child.Context.(*TextNodeContext)
 		if !ok {
-			r.renderTree(child, lastRow)
+			r.renderTree(&buf, child, lastRow)
 		} else {
 			// Draw our text
-			fmt.Fprint(r.Builder, ctx.Text)
+			fmt.Fprint(&buf, ctx.Text)
 		}
+	}
 
-		// If we have a left margin, draw that first.
-		if v := int(child.LayoutGetMargin(flex.EdgeRight)); v > 0 {
-			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
-		}
-		if v := int(child.LayoutGetPadding(flex.EdgeRight)); v > 0 {
-			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
+	// We've finished drawing our main content. If we have any paddings/margins
+	// we have to draw these now into our buffer.
+	leftMargin := int(parent.LayoutGetMargin(flex.EdgeLeft))
+	rightMargin := int(parent.LayoutGetMargin(flex.EdgeRight))
+	leftPadding := int(parent.LayoutGetPadding(flex.EdgeLeft))
+	rightPadding := int(parent.LayoutGetPadding(flex.EdgeRight))
+
+	// NOTE(mitchellh): this is not an optimal way to do this. This was a
+	// get-it-done-fast implementation. We should swing back around at some
+	// point and rewrite this with less allocations and copying.
+	lines := strings.Split(buf.String(), "\n")
+	for i, line := range lines {
+		final.Write(bytes.Repeat([]byte(" "), leftMargin+leftPadding))
+		io.Copy(final, strings.NewReader(line))
+		final.Write(bytes.Repeat([]byte(" "), rightMargin+rightPadding))
+		if i < len(lines)-1 {
+			final.Write([]byte("\n"))
 		}
 	}
 }

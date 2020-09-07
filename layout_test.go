@@ -21,6 +21,13 @@ func TestLayout(t *testing.T) {
 		))
 	})
 
+	t.Run("left margin multi-line", func(t *testing.T) {
+		// single line
+		require.Equal(t, "  hello\n  world", TestRender(t,
+			Layout(Text("hello\nworld")).MarginLeft(2),
+		))
+	})
+
 	t.Run("left padding", func(t *testing.T) {
 		// single line
 		require.Equal(t, "  hello", TestRender(t,

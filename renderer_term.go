@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/creack/pty"
 	"github.com/morikuni/aec"
@@ -85,44 +84,8 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 	}
 
 	// Draw
-	r.renderTree(root, -1)
-}
-
-func (r *TerminalRenderer) renderTree(parent *flex.Node, lastRow int) {
-	for _, child := range parent.Children {
-		// If we're on a different row than last time then we draw a newline.
-		thisRow := int(child.LayoutGetTop())
-		if lastRow >= 0 && thisRow > lastRow {
-			fmt.Fprintln(r.Output)
-		}
-		lastRow = thisRow
-
-		// If we have a left margin, draw that first.
-		if v := int(child.LayoutGetMargin(flex.EdgeLeft)); v > 0 {
-			fmt.Fprint(r.Output, strings.Repeat(" ", v))
-		}
-		if v := int(child.LayoutGetPadding(flex.EdgeLeft)); v > 0 {
-			fmt.Fprint(r.Output, strings.Repeat(" ", v))
-		}
-
-		// Get our node context. If we don't have one then we're a container
-		// and we render below.
-		ctx, ok := child.Context.(*TextNodeContext)
-		if !ok {
-			r.renderTree(child, lastRow)
-		} else {
-			// Draw our text
-			fmt.Fprint(r.Output, ctx.Text)
-		}
-
-		// If we have a left margin, draw that first.
-		if v := int(child.LayoutGetMargin(flex.EdgeRight)); v > 0 {
-			fmt.Fprint(r.Output, strings.Repeat(" ", v))
-		}
-		if v := int(child.LayoutGetPadding(flex.EdgeRight)); v > 0 {
-			fmt.Fprint(r.Output, strings.Repeat(" ", v))
-		}
-	}
+	var sr StringRenderer
+	sr.renderTree(w, root, -1)
 }
 
 type termRootContext struct {
