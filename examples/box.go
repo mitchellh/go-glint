@@ -11,14 +11,14 @@ import (
 func main() {
 	d := glint.New()
 	d.Append(
-		glint.Layout(
-			gc.Spinner(),
-			glint.Style(
+		glint.Style(
+			glint.Layout(
+				gc.Spinner(),
 				glint.Layout(glint.Text("Build site and validate links...")).MarginLeft(1),
-				glint.Color("green"),
-			),
-			glint.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
-		).Row(),
+				glint.Layout(gc.Stopwatch(time.Now())).MarginLeft(1),
+			).Row(),
+			glint.Color("green"),
+		),
 		glint.Layout(
 			gc.Spinner(),
 			glint.Layout(glint.Text("Preparing execution environment...")).MarginLeft(1),

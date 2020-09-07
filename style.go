@@ -6,6 +6,8 @@ import (
 	"gopkg.in/gookit/color.v1"
 )
 
+// Style applies visual styles to this component and any children. This
+// can be used to set a foreground color, for example, to a set of components.
 func Style(inner Component, opts ...StyleOption) Component {
 	c := &styleComponent{inner: inner}
 	for _, opt := range opts {
@@ -15,6 +17,9 @@ func Style(inner Component, opts ...StyleOption) Component {
 	return c
 }
 
+// styleRender is used internally to apply styles to the given string. The
+// ctx should be the same context given when Body was called on this
+// component.
 func styleRender(ctx context.Context, v string) string {
 	value, _ := ctx.Value(styleCtxKey).([]*styleComponent)
 	for _, s := range value {
