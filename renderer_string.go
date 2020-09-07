@@ -76,13 +76,18 @@ func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow 
 	// NOTE(mitchellh): this is not an optimal way to do this. This was a
 	// get-it-done-fast implementation. We should swing back around at some
 	// point and rewrite this with less allocations and copying.
-	lines := strings.Split(buf.String(), "\n")
+	lines := bytes.Split(buf.Bytes(), newline)
 	for i, line := range lines {
-		final.Write(bytes.Repeat([]byte(" "), leftMargin+leftPadding))
-		io.Copy(final, strings.NewReader(line))
-		final.Write(bytes.Repeat([]byte(" "), rightMargin+rightPadding))
+		final.Write(bytes.Repeat(space, leftMargin+leftPadding))
+		final.Write(line)
+		final.Write(bytes.Repeat(space, rightMargin+rightPadding))
 		if i < len(lines)-1 {
-			final.Write([]byte("\n"))
+			final.Write(newline)
 		}
 	}
 }
+
+var (
+	space   = []byte(" ")
+	newline = []byte("\n")
+)
