@@ -34,8 +34,3 @@ this within its existing set of components.
 * **Mount/Unmount Callbacks.** Glint components should be provided with a way
 to detect when they're mounted, unmounted, and other events within a document.
 This can be used for initialization and cleanup.
-
-* **Custom renderers.** We want to support custom renderers that can take
-the common component tree and choose to render and draw frames differently.
-This would allow Glint to be able to output JSON streams, draw to interfaces
-such as Slack, and others all using the same component model.
