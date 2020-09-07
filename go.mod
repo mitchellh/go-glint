@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/cheggaaa/pb/v3 v3.0.5
 	github.com/creack/pty v1.1.11
+	github.com/mitchellh/go-testing-interface v1.14.1
 	github.com/morikuni/aec v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/tj/go-spin v1.1.0

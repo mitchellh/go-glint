@@ -35,6 +35,30 @@ func (c *LayoutComponent) MarginLeft(x int) *LayoutComponent {
 	return c
 }
 
+// MarginRight sets the `margin-left` property.
+func (c *LayoutComponent) MarginRight(x int) *LayoutComponent {
+	c.builder = c.builder.Raw(func(n *flex.Node) {
+		n.StyleSetMargin(flex.EdgeRight, float32(x))
+	})
+	return c
+}
+
+// PaddingLeft sets the `margin-left` property.
+func (c *LayoutComponent) PaddingLeft(x int) *LayoutComponent {
+	c.builder = c.builder.Raw(func(n *flex.Node) {
+		n.StyleSetPadding(flex.EdgeLeft, float32(x))
+	})
+	return c
+}
+
+// PaddingRight sets the `margin-left` property.
+func (c *LayoutComponent) PaddingRight(x int) *LayoutComponent {
+	c.builder = c.builder.Raw(func(n *flex.Node) {
+		n.StyleSetPadding(flex.EdgeRight, float32(x))
+	})
+	return c
+}
+
 // Component implementation
 func (c *LayoutComponent) Body() Component {
 	return Fragment(c.inner...)

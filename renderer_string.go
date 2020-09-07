@@ -56,16 +56,26 @@ func (r *StringRenderer) renderTree(parent *flex.Node, lastRow int) {
 		if v := int(child.LayoutGetMargin(flex.EdgeLeft)); v > 0 {
 			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
 		}
+		if v := int(child.LayoutGetPadding(flex.EdgeLeft)); v > 0 {
+			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
+		}
 
 		// Get our node context. If we don't have one then we're a container
 		// and we render below.
 		ctx, ok := child.Context.(*TextNodeContext)
 		if !ok {
 			r.renderTree(child, lastRow)
-			continue
+		} else {
+			// Draw our text
+			fmt.Fprint(r.Builder, ctx.Text)
 		}
 
-		// Draw our text
-		fmt.Fprint(r.Builder, ctx.Text)
+		// If we have a left margin, draw that first.
+		if v := int(child.LayoutGetMargin(flex.EdgeRight)); v > 0 {
+			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
+		}
+		if v := int(child.LayoutGetPadding(flex.EdgeRight)); v > 0 {
+			fmt.Fprint(r.Builder, strings.Repeat(" ", v))
+		}
 	}
 }
