@@ -110,28 +110,8 @@ func (r *TerminalRenderer) renderTree(parent *flex.Node, lastRow int) {
 			continue
 		}
 
-		text := ctx.Text
-
-		// If the height/width that the layout engine calculated is less than
-		// the height that we originally measured, then we need to give the
-		// element a chance to rerender into that dimension. If it still exceeds
-		// it, we truncate.
-		height := child.LayoutGetHeight()
-		width := child.LayoutGetWidth()
-		if height < ctx.Size.Height || width < ctx.Size.Width {
-			// Rerender into it
-			MeasureTextNode(child,
-				width, flex.MeasureModeAtMost,
-				height, flex.MeasureModeAtMost,
-			)
-			text = ctx.Text
-
-			// Truncate, no-ops if it fits.
-			text = truncateTextHeight(text, int(height))
-		}
-
 		// Draw our text
-		fmt.Fprint(r.Output, text)
+		fmt.Fprint(r.Output, ctx.Text)
 	}
 }
 

@@ -110,6 +110,9 @@ func (d *Document) RenderFrame() {
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
 
+	// Fix any text nodes that need to be fixed.
+	d.resizeTextNodes(root)
+
 	// Render the tree
 	d.r.RenderRoot(root, d.prevRoot)
 
@@ -151,4 +154,28 @@ func (d *Document) RenderFrame() {
 
 	// Store our previous root
 	d.prevRoot = root
+}
+
+func (d *Document) resizeTextNodes(parent *flex.Node) {
+	for _, child := range parent.Children {
+		// Get our node context. If we don't have one then we're a container
+		// and we render below.
+		ctx, ok := child.Context.(*TextNodeContext)
+		if !ok {
+			d.resizeTextNodes(child)
+			continue
+		}
+
+		// If the height/width that the layout engine calculated is less than
+		// the height that we originally measured, then we need to give the
+		// element a chance to rerender into that dimension.
+		height := child.LayoutGetHeight()
+		width := child.LayoutGetWidth()
+		if height < ctx.Size.Height || width < ctx.Size.Width {
+			child.Measure(child,
+				width, flex.MeasureModeAtMost,
+				height, flex.MeasureModeAtMost,
+			)
+		}
+	}
 }
