@@ -1,8 +1,6 @@
 package components
 
 import (
-	"strings"
-
 	"github.com/cheggaaa/pb/v3"
 	"github.com/mitchellh/go-glint"
 )
@@ -33,7 +31,6 @@ func (el *ProgressElement) Body() glint.Component {
 	return glint.TextFunc(func(rows, cols uint) string {
 		el.ProgressBar.SetWidth(int(cols))
 
-		//return el.ProgressBar.String()
-		return strings.TrimSpace(strings.Repeat(el.ProgressBar.String()+"\n", 5))
+		return el.ProgressBar.String()
 	})
 }

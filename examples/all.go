@@ -2,18 +2,17 @@ package main
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"github.com/mitchellh/go-glint"
+	gc "github.com/mitchellh/go-glint/components"
 )
 
 func main() {
 	// Create a progress bar and just render it periodically
-	p := glint.Progress(100)
+	p := gc.Progress(100)
 
 	// Create a text element that is updated with the time
-	timeEl := glint.Text("")
 	go func() {
 		for {
 			time.Sleep(50 * time.Millisecond)
@@ -24,18 +23,16 @@ func main() {
 			} else {
 				p.Increment()
 			}
-
-			// Update our time
-			timeEl.Update(time.Now().String())
 		}
 	}()
 
-	var d glint.Document
-	d.SetOutput(os.Stdout)
-	d.Add(
+	d := glint.New()
+	d.Append(
 		glint.Text("Fixed to top"),
 		p,
-		timeEl,
+		glint.TextFunc(func(rows, cols uint) string {
+			return time.Now().String()
+		}),
 		glint.Text("All with flexbox!"),
 	)
 	d.Render(context.Background())
