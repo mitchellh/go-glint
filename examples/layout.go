@@ -27,6 +27,7 @@ func main() {
 		glint.Layout(
 			glint.Text("Preparing volume to work with..."),
 		).MarginLeft(4),
+		glint.Text("\nWaiting..."),
 	)
 	d.Render(context.Background())
 }
