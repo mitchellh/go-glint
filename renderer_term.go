@@ -10,7 +10,7 @@ import (
 	sshterm "golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/gookit/color.v1"
 
-	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/flex"
 )
 
 // TerminalRenderer renders output to a terminal. It expects the Output set

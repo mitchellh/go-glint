@@ -3,7 +3,7 @@ package glint
 import (
 	"context"
 
-	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/flex"
 	"github.com/mitchellh/go-glint/internal/layout"
 )
 

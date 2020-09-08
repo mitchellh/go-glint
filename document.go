@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/flex"
 )
 
 // Document is the primary structure for managing and drawing components.

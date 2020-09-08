@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/flex"
 )
 
 // StringRenderer renders output to a string builder. This will clear

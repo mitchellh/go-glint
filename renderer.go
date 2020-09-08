@@ -1,7 +1,7 @@
 package glint
 
 import (
-	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/flex"
 )
 
 // Renderers are responsible for helping configure layout properties and

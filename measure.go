@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/mitchellh/go-glint/internal/flex"
+	"github.com/mitchellh/go-glint/flex"
 )
 
 // TextNodeContext is the *flex.Node.Context set for all *TextComponent flex nodes.
