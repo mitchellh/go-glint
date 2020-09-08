@@ -13,6 +13,37 @@ integrating this library into [a new HashiCorp project](https://twitter.com/mitc
 and the experience of using this library in the real world will likely drive major
 changes.
 
+## Example
+
+The example below shows a simple dynamic counter:
+
+```go
+func main() {
+	var counter uint32
+	go func() {
+		for {
+			time.Sleep(100 * time.Millisecond)
+			atomic.AddUint32(&counter, 1)
+		}
+	}()
+
+	d := glint.New()
+	d.Append(
+		glint.Style(
+			glint.TextFunc(func(rows, cols uint) string {
+				return fmt.Sprintf("%d tests passed", atomic.LoadUint32(&counter))
+			}),
+			glint.Color("green"),
+		),
+	)
+	d.Render(context.Background())
+}
+```
+
+Output:
+
+![Example](https://user-images.githubusercontent.com/1299/92431533-9baf8000-f14c-11ea-94ad-8ff97ed26fec.gif)
+
 ## Roadmap
 
 Glint is still an early stage project and there is a lot that we want to
