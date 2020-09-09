@@ -10,8 +10,6 @@ import (
 )
 
 // SparklineComponent renders a sparkline graph.
-//
-// BUG(mitchellh): this stops rendering nicely at ~30 characters. Will fix soon.
 type SparklineComponent struct {
 	sync.Mutex
 

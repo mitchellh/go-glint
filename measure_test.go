@@ -35,6 +35,18 @@ func TestLongestLine(t *testing.T) {
 			"foo\nbarr\nbaz\n",
 			4,
 		},
+
+		{
+			"unicode character",
+			"\u2584",
+			1,
+		},
+
+		{
+			"unicode character with newlines",
+			"\u2584\n",
+			1,
+		},
 	}
 
 	for _, tt := range cases {
@@ -159,6 +171,20 @@ func TestClampTextWidth(t *testing.T) {
 			"hello world\ni fit!",
 			5,
 			"hello\ni fit",
+		},
+
+		{
+			"unicode multi-byte character",
+			"\u2584",
+			1,
+			"\u2584",
+		},
+
+		{
+			"unicode exceeds width",
+			"\u2584\u2582",
+			1,
+			"\u2584",
 		},
 	}
 

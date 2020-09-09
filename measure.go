@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/mitchellh/go-glint/flex"
 )
@@ -79,14 +80,14 @@ func countLines(s string) int {
 }
 
 func longestLine(s string) int {
-	lastIdx, longest := 0, 0
+	longest := 0
 	for {
 		idx := strings.IndexByte(s, '\n')
 		if idx == -1 {
 			break
 		}
 
-		current := idx - lastIdx
+		current := utf8.RuneCountInString(s[:idx])
 		if current > longest {
 			longest = current
 		}
@@ -95,7 +96,7 @@ func longestLine(s string) int {
 	}
 
 	if longest == 0 {
-		return len(s)
+		return utf8.RuneCountInString(s)
 	}
 
 	return longest
@@ -150,7 +151,8 @@ func clampTextWidth(s string, width int) string {
 			end = true
 		}
 
-		if idx > width {
+		runeCount := utf8.RuneCountInString(s[:idx])
+		if runeCount > width {
 			if b == nil {
 				b = &strings.Builder{}
 				if total > 0 {
@@ -159,7 +161,8 @@ func clampTextWidth(s string, width int) string {
 				}
 			}
 
-			b.WriteString(s[:width])
+			runes := []rune(s)
+			b.WriteString(string(runes[:width]))
 			if !end {
 				b.WriteByte('\n')
 			}
