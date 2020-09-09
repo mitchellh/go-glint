@@ -128,9 +128,6 @@ func truncateTextHeight(s string, height int) string {
 
 // clampTextWidth cuts off any lines in s that are longer than width
 // characters (not including the newline).
-//
-// This currently clamps by bytes and not runes, so this may result in
-// weird characters for multi-byte characters. This needs to be fixed.
 func clampTextWidth(s string, width int) string {
 	// If our width is zero just return empty
 	if width == 0 {
