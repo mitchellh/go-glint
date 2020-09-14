@@ -67,10 +67,6 @@ recalculate layouts and rerender outputs.
 * **User Input.** Glint should be able to query for user input and render
 this within its existing set of components.
 
-* **Mount/Unmount Callbacks.** Glint components should be provided with a way
-to detect when they're mounted, unmounted, and other events within a document.
-This can be used for initialization and cleanup.
-
 * **Expose styling to custom renderers.** Currently the `Style` component
 is a special-case for the terminal renderer to render colors. I'd like to expose
 the styles in a way that other renderers could use it in some meaningful way.
