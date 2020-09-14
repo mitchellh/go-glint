@@ -25,6 +25,7 @@ type Document struct {
 	els         []Component
 	refreshRate time.Duration
 	prevRoot    *flex.Node
+	mounted     map[ComponentMounter]struct{}
 }
 
 // New returns a Document that will output to stdout.
@@ -60,6 +61,14 @@ func (d *Document) Append(el ...Component) {
 	d.els = append(d.els, el...)
 }
 
+// Set sets the components for the document. This will replace all
+// previous components.
+func (d *Document) Set(els ...Component) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.els = els
+}
+
 // Render starts a render loop that continues to render until the
 // context is cancelled. This will render at the configured refresh rate.
 // If the refresh rate is changed, it will not affect an active render loop.
@@ -69,7 +78,7 @@ func (d *Document) Render(ctx context.Context) {
 	dur := d.refreshRate
 	d.mu.Unlock()
 	if dur == 0 {
-		dur = time.Second / 12
+		dur = time.Second / 24
 	}
 
 	t := time.NewTicker(dur)
@@ -111,7 +120,7 @@ func (d *Document) RenderFrame() {
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
 
 	// Fix any text nodes that need to be fixed.
-	d.resizeTextNodes(root)
+	d.handleNodes(root, nil)
 
 	// Render the tree
 	d.r.RenderRoot(root, d.prevRoot)
@@ -132,7 +141,7 @@ func (d *Document) RenderFrame() {
 		// component doesn't match our expectations it means we hit
 		// something weird and we exit too.
 		ctx, ok := child.Context.(*parentContext)
-		if !ok || ctx == nil || ctx.Component != el || !ctx.Finalized {
+		if !ok || ctx == nil || ctx.C != el || !ctx.Finalized {
 			break
 		}
 
@@ -156,26 +165,74 @@ func (d *Document) RenderFrame() {
 	d.prevRoot = root
 }
 
-func (d *Document) resizeTextNodes(parent *flex.Node) {
+func (d *Document) handleNodes(
+	parent *flex.Node,
+	seen map[ComponentMounter]struct{},
+) {
+	// For our first call, we detect the root since we use it later
+	// to do some final calls.
+	root := seen == nil
+	if root {
+		seen = map[ComponentMounter]struct{}{}
+	}
+
 	for _, child := range parent.Children {
-		// Get our node context. If we don't have one then we're a container
-		// and we render below.
-		ctx, ok := child.Context.(*TextNodeContext)
-		if !ok {
-			d.resizeTextNodes(child)
+		if ctx, ok := child.Context.(treeContext); ok {
+			c := ctx.Component()
+
+			// Mount callbacks
+			if mc, ok := c.(ComponentMounter); ok {
+				// Only if we haven't seen this already...
+				if _, ok := seen[mc]; !ok {
+					seen[mc] = struct{}{}
+
+					if d.mounted == nil {
+						d.mounted = map[ComponentMounter]struct{}{}
+					}
+
+					// And we haven't notified this already...
+					if _, ok := d.mounted[mc]; !ok {
+						d.mounted[mc] = struct{}{}
+
+						// Notify
+						mc.Mount()
+					}
+				}
+			}
+
 			continue
 		}
 
 		// If the height/width that the layout engine calculated is less than
 		// the height that we originally measured, then we need to give the
 		// element a chance to rerender into that dimension.
-		height := child.LayoutGetHeight()
-		width := child.LayoutGetWidth()
-		if height < ctx.Size.Height || width < ctx.Size.Width {
-			child.Measure(child,
-				width, flex.MeasureModeAtMost,
-				height, flex.MeasureModeAtMost,
-			)
+		if ctx, ok := child.Context.(*TextNodeContext); ok {
+			height := child.LayoutGetHeight()
+			width := child.LayoutGetWidth()
+			if height < ctx.Size.Height || width < ctx.Size.Width {
+				child.Measure(child,
+					width, flex.MeasureModeAtMost,
+					height, flex.MeasureModeAtMost,
+				)
+			}
+		}
+
+		d.handleNodes(child, seen)
+	}
+
+	// If we're the root call, then we preform some final calls. Otherwise
+	// we just return, we're done.
+	if !root {
+		return
+	}
+
+	// Go through our previously mounted set and if we didn't see it,
+	// then call unmount on it. After we're done, what we saw is our new
+	// map of mounted elements.
+	for mc := range d.mounted {
+		if _, ok := seen[mc]; !ok {
+			mc.Unmount()
 		}
 	}
+	d.mounted = seen
 }

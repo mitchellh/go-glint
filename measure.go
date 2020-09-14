@@ -28,6 +28,8 @@ type TextNodeContext struct {
 	Size flex.Size
 }
 
+func (c *TextNodeContext) Component() Component { return c.C }
+
 // MeasureTextNode implements flex.MeasureFunc and returns the measurements
 // for the given node only if the node represents a TextComponent. This is
 // the MeasureFunc that is typically used for renderers since all component

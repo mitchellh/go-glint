@@ -39,14 +39,13 @@ func tree(
 	node := flex.NewNodeWithConfig(parent.Config)
 	parent.InsertChild(node, len(parent.Children))
 
+	// Setup our default context
+	parentCtx := &parentContext{C: c}
+	node.Context = parentCtx
+
 	// Check if we're finalized and note it
 	if _, ok := c.(*finalizedComponent); ok {
-		node.Context = &parentContext{
-			Component: c,
-			Finalized: true,
-		}
-
-		finalize = true
+		parentCtx.Finalized = true
 	}
 
 	// Finalize
@@ -77,6 +76,12 @@ func tree(
 }
 
 type parentContext struct {
-	Component Component
+	C         Component
 	Finalized bool
+}
+
+func (c *parentContext) Component() Component { return c.C }
+
+type treeContext interface {
+	Component() Component
 }

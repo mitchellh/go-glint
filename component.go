@@ -42,6 +42,31 @@ type ComponentFinalizer interface {
 	Finalize()
 }
 
+// ComponentMounter allows components to be notified when they are
+// mounted and unmounted. A mounted component is one that is added to
+// a render tree for the first time. A component is unmounted when it is
+// removed from the render tree.
+//
+// The callbacks here may be called multiple times under certain scenarios:
+// (1) a component is used in multiple Document instances, (2) a component
+// is unmounted and then remounted in the future.
+//
+// A component mounted multiple times in the same render tree does NOT
+// have the mount callbacks called multiple times.
+//
+// A good use case for this interface is setting up and cleaning up resources.
+type ComponentMounter interface {
+	Component
+
+	// Mount is called when the component is added to a render tree.
+	Mount()
+
+	// Unmount is called when the component is removed from a render tree.
+	// This will be called under ANY scenario where the component is
+	// removed from the render tree, including finalization.
+	Unmount()
+}
+
 // componentLayout can be implemented to set custom layout settings
 // for the component. This can only be implemented by internal components
 // since we use an internal library.
