@@ -110,17 +110,20 @@ func (d *Document) RenderFrame() {
 		return
 	}
 
+	// Our context
+	ctx := context.Background()
+
 	// Setup our root node
 	root := d.r.LayoutRoot()
 
 	// Build our render tree
-	tree(context.Background(), root, Fragment(d.els...), false)
+	tree(ctx, root, Fragment(d.els...), false)
 
 	// Calculate the layout
 	flex.CalculateLayout(root, flex.Undefined, flex.Undefined, flex.DirectionLTR)
 
 	// Fix any text nodes that need to be fixed.
-	d.handleNodes(root, nil)
+	d.handleNodes(ctx, root, nil)
 
 	// Render the tree
 	d.r.RenderRoot(root, d.prevRoot)
@@ -166,6 +169,7 @@ func (d *Document) RenderFrame() {
 }
 
 func (d *Document) handleNodes(
+	ctx context.Context,
 	parent *flex.Node,
 	seen map[ComponentMounter]struct{},
 ) {
@@ -177,8 +181,8 @@ func (d *Document) handleNodes(
 	}
 
 	for _, child := range parent.Children {
-		if ctx, ok := child.Context.(treeContext); ok {
-			c := ctx.Component()
+		if tctx, ok := child.Context.(treeContext); ok {
+			c := tctx.Component()
 
 			// Mount callbacks
 			if mc, ok := c.(ComponentMounter); ok {
@@ -195,7 +199,7 @@ func (d *Document) handleNodes(
 						d.mounted[mc] = struct{}{}
 
 						// Notify
-						mc.Mount()
+						mc.Mount(ctx)
 					}
 				}
 			}
@@ -206,10 +210,10 @@ func (d *Document) handleNodes(
 		// If the height/width that the layout engine calculated is less than
 		// the height that we originally measured, then we need to give the
 		// element a chance to rerender into that dimension.
-		if ctx, ok := child.Context.(*TextNodeContext); ok {
+		if tctx, ok := child.Context.(*TextNodeContext); ok {
 			height := child.LayoutGetHeight()
 			width := child.LayoutGetWidth()
-			if height < ctx.Size.Height || width < ctx.Size.Width {
+			if height < tctx.Size.Height || width < tctx.Size.Width {
 				child.Measure(child,
 					width, flex.MeasureModeAtMost,
 					height, flex.MeasureModeAtMost,
@@ -217,7 +221,7 @@ func (d *Document) handleNodes(
 			}
 		}
 
-		d.handleNodes(child, seen)
+		d.handleNodes(ctx, child, seen)
 	}
 
 	// If we're the root call, then we preform some final calls. Otherwise
@@ -231,7 +235,7 @@ func (d *Document) handleNodes(
 	// map of mounted elements.
 	for mc := range d.mounted {
 		if _, ok := seen[mc]; !ok {
-			mc.Unmount()
+			mc.Unmount(ctx)
 		}
 	}
 	d.mounted = seen

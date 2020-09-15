@@ -58,13 +58,15 @@ type ComponentFinalizer interface {
 type ComponentMounter interface {
 	Component
 
-	// Mount is called when the component is added to a render tree.
-	Mount()
+	// Mount is called when the component is added to a render tree. The
+	// context given to this is used to access data set by Glint and the
+	// renderer in use.
+	Mount(context.Context)
 
 	// Unmount is called when the component is removed from a render tree.
 	// This will be called under ANY scenario where the component is
 	// removed from the render tree, including finalization.
-	Unmount()
+	Unmount(context.Context)
 }
 
 // componentLayout can be implemented to set custom layout settings

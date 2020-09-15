@@ -1,6 +1,7 @@
 package glint
 
 import (
+	"context"
 	"sync/atomic"
 	"testing"
 
@@ -50,8 +51,8 @@ type testMount struct {
 	unmount uint32
 }
 
-func (c *testMount) Mount()   { atomic.AddUint32(&c.mount, 1) }
-func (c *testMount) Unmount() { atomic.AddUint32(&c.unmount, 1) }
+func (c *testMount) Mount(context.Context)   { atomic.AddUint32(&c.mount, 1) }
+func (c *testMount) Unmount(context.Context) { atomic.AddUint32(&c.unmount, 1) }
 
 var (
 	_ Component        = (*testMount)(nil)
