@@ -26,6 +26,7 @@ type Document struct {
 	refreshRate time.Duration
 	prevRoot    *flex.Node
 	mounted     map[ComponentMounter]struct{}
+	paused      bool
 }
 
 // New returns a Document that will output to stdout.
@@ -87,6 +88,22 @@ func (d *Document) Close() error {
 	return nil
 }
 
+// Pause will pause the renderer. This will case RenderFrame to do nothing
+// until Resume is called. The use case for this is if you want to wait for
+// input (stdin) or any other reason.
+func (d *Document) Pause() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.paused = true
+}
+
+// Resume undoes a Pause call. If not paused, this does nothing.
+func (d *Document) Resume() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.paused = false
+}
+
 // Render starts a render loop that continues to render until the
 // context is cancelled. This will render at the configured refresh rate.
 // If the refresh rate is changed, it will not affect an active render loop.
@@ -122,6 +139,11 @@ func (d *Document) Render(ctx context.Context) {
 func (d *Document) RenderFrame() {
 	d.mu.Lock()
 	defer d.mu.Unlock()
+
+	// If we're paused do nothing.
+	if d.paused {
+		return
+	}
 
 	// If we don't have a renderer set, then don't render anything.
 	if d.r == nil {
