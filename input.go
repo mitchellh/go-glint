@@ -15,6 +15,13 @@ type InputComponent struct {
 	cb InputFunc
 }
 
+// Input registers a component where the callback will be called whenever
+// any input is processed.
+//
+// The presence of any input in a document will put the terminal into raw
+// mode. Signals will still be sent to the process. It is VERY IMPORTANT
+// that Document.Close is called so that the terminal is reset out of raw
+// mode. To do this, you must register a signal handler for interrupts.
 func Input(cb InputFunc) *InputComponent {
 	return &InputComponent{cb: cb}
 }
