@@ -70,6 +70,24 @@ func (d *Document) Set(els ...Component) {
 	d.els = els
 }
 
+// Close ensures that all elements are unmounted by finalizing all the
+// output and then calling RenderFrame. Users of Document should ensure
+// that Close is always called.
+func (d *Document) Close() error {
+	d.mu.Lock()
+	for i, el := range d.els {
+		d.els[i] = Finalize(el)
+	}
+	d.mu.Unlock()
+
+	// We call RenderFrame twice to ensure we remove the elements AND
+	// call Unmount on them.
+	d.RenderFrame()
+	d.RenderFrame()
+
+	return nil
+}
+
 // Render starts a render loop that continues to render until the
 // context is cancelled. This will render at the configured refresh rate.
 // If the refresh rate is changed, it will not affect an active render loop.

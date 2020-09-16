@@ -44,6 +44,31 @@ func TestDocument_mountUnmount(t *testing.T) {
 	require.Equal(uint32(1), atomic.LoadUint32(&c.unmount))
 }
 
+func TestDocument_unmountClose(t *testing.T) {
+	require := require.New(t)
+
+	// Create our doc
+	r := &StringRenderer{}
+	d := New()
+	d.SetRenderer(r)
+
+	// Add our component
+	var c testMount
+	d.Append(&c)
+	require.Equal(uint32(0), atomic.LoadUint32(&c.mount))
+	require.Equal(uint32(0), atomic.LoadUint32(&c.unmount))
+
+	// Render once
+	d.RenderFrame()
+	require.Equal(uint32(1), atomic.LoadUint32(&c.mount))
+	require.Equal(uint32(0), atomic.LoadUint32(&c.unmount))
+
+	// Render again
+	require.NoError(d.Close())
+	require.Equal(uint32(1), atomic.LoadUint32(&c.mount))
+	require.Equal(uint32(1), atomic.LoadUint32(&c.unmount))
+}
+
 type testMount struct {
 	terminalComponent
 
