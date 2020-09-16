@@ -54,6 +54,7 @@ func MakeRaw(fd int) (*State, error) {
 
 	// GOGLINT: we want signals to be processed like normal
 	termios.Lflag |= unix.ISIG
+	termios.Oflag |= unix.OPOST
 
 	if err := unix.IoctlSetTermios(fd, ioctlWriteTermios, termios); err != nil {
 		return nil, err
