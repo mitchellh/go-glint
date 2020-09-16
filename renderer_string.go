@@ -48,6 +48,11 @@ func (r *StringRenderer) RenderRoot(root, prev *flex.Node) {
 func (r *StringRenderer) renderTree(final io.Writer, parent *flex.Node, lastRow int, color bool) {
 	var buf bytes.Buffer
 	for _, child := range parent.Children {
+		// Ignore children with a zero height
+		if child.LayoutGetHeight() == 0 {
+			continue
+		}
+
 		// If we're on a different row than last time then we draw a newline.
 		thisRow := int(child.LayoutGetTop())
 		if lastRow >= 0 && thisRow > lastRow {
