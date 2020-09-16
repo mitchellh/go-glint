@@ -19,10 +19,6 @@ type TerminalRenderer struct {
 	// Output is where to write to. This should be a TTY.
 	Output io.Writer
 
-	// Input is the reader where the input stream will come from. This
-	// should be a TTY ideally but doensn't have to be.
-	Input io.Reader
-
 	// Rows, Cols are the dimensions of the terminal. If these are not set
 	// (zero), then we will auto-detect the size of the output if it is a TTY.
 	// If the values are still zero, nothing will be rendered.
@@ -91,10 +87,6 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 	// Draw
 	var sr StringRenderer
 	sr.renderTree(w, root, -1, color.IsSupportColor())
-}
-
-func (r *TerminalRenderer) InputStream() io.Reader {
-	return r.Input
 }
 
 type termRootContext struct {

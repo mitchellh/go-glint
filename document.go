@@ -33,7 +33,6 @@ func New() *Document {
 	var d Document
 	d.SetRenderer(&TerminalRenderer{
 		Output: os.Stdout,
-		Input:  os.Stdin,
 	})
 
 	return &d
