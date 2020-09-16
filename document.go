@@ -33,6 +33,7 @@ func New() *Document {
 	var d Document
 	d.SetRenderer(&TerminalRenderer{
 		Output: os.Stdout,
+		Input:  os.Stdin,
 	})
 
 	return &d
@@ -111,7 +112,7 @@ func (d *Document) RenderFrame() {
 	}
 
 	// Our context
-	ctx := context.Background()
+	ctx := WithRenderer(context.Background(), d.r)
 
 	// Setup our root node
 	root := d.r.LayoutRoot()
