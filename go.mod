@@ -10,5 +10,6 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/tj/go-spin v1.1.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/sys v0.0.0-20200116001909-b77594299b42
 	gopkg.in/gookit/color.v1 v1.1.6
 )

@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"github.com/mitchellh/go-glint/internal/input/terminal"
 )
 
 // makeRaw puts the reader r in raw mode if it is a TTY and it isn't
