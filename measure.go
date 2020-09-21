@@ -52,9 +52,18 @@ func MeasureTextNode(
 
 	// Otherwise, we have to render this.
 	ctx.Text = ctx.C.Render(uint(height), uint(width))
+
+	// Calculate the size
 	ctx.Size = flex.Size{
 		Width:  float32(longestLine(ctx.Text)),
 		Height: float32(countLines(ctx.Text)),
+	}
+
+	// We special case the empty-text case, since this is a height of
+	// one and width of zero. If the user wanted no rendering at all they
+	// should render nil.
+	if ctx.Text == "" {
+		ctx.Size.Height = 1
 	}
 
 	// Truncate height if we have a limit. This is a no-op if it fits.
