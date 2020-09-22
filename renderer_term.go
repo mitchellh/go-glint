@@ -69,7 +69,11 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 	// of rows then we need to clear the screen.
 	if prev != nil {
 		height := uint(prev.LayoutGetHeight())
-		if height > 0 {
+		if height == 0 {
+			// If our previous render height is zero that means that everything
+			// was finalized and we need to start on a new line.
+			fmt.Fprintf(w, "\n")
+		} else {
 			if height <= rows {
 				// Delete current line
 				fmt.Fprint(w, b.Column(0).EraseLine(aec.EraseModes.All).ANSI)

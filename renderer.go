@@ -23,9 +23,14 @@ type Renderer interface {
 	// This will always be called with the root node. In the future we plan
 	// to support partial re-renders but this will be done via a separate call.
 	//
+	// The height of root is always greater than zero. RenderRoot won't be
+	// called if the root has a zero height since this implies that nothing
+	// has to be drawn.
+	//
 	// prev will be the previous root that was rendered. This can be used to
 	// determine layout differences. This will be nil if this is the first
-	// render.
+	// render. If the height of the previous node is zero then that means that
+	// everything drawn was finalized.
 	RenderRoot(root, prev *flex.Node)
 }
 

@@ -180,6 +180,11 @@ func (d *Document) RenderFrame() {
 	// Fix any text nodes that need to be fixed.
 	d.handleNodes(ctx, root, nil)
 
+	// If the height of the root is zero then we do nothing.
+	if uint(root.LayoutGetHeight()) == 0 {
+		return
+	}
+
 	// Render the tree
 	d.r.RenderRoot(root, d.prevRoot)
 
