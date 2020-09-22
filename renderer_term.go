@@ -89,6 +89,11 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 	sr.renderTree(w, root, -1, color.IsSupportColor())
 }
 
+func (r *TerminalRenderer) Close() error {
+	fmt.Fprintln(r.Output, "")
+	return nil
+}
+
 type termRootContext struct {
 	Rows, Cols uint
 }

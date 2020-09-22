@@ -8,6 +8,11 @@ import (
 
 // Renderers are responsible for helping configure layout properties and
 // ultimately drawing components.
+//
+// Renderers may also optionally implement io.Closer. If a renderer implements
+// io.Closer, the Close method will be called. After this is called. the
+// Render methods will no longer be called again. This can be used to perform
+// final cleanups.
 type Renderer interface {
 	// LayoutRoot returns the root node for the layout engine. This should
 	// set any styling to restrict children such as width. If this returns nil

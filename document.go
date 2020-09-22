@@ -2,6 +2,7 @@ package glint
 
 import (
 	"context"
+	"io"
 	"os"
 	"sync"
 	"time"
@@ -27,6 +28,7 @@ type Document struct {
 	prevRoot    *flex.Node
 	mounted     map[ComponentMounter]struct{}
 	paused      bool
+	closed      bool
 }
 
 // New returns a Document that will output to stdout.
@@ -75,15 +77,28 @@ func (d *Document) Set(els ...Component) {
 // that Close is always called.
 func (d *Document) Close() error {
 	d.mu.Lock()
+	if d.closed {
+		d.mu.Unlock()
+		return nil
+	}
+
 	for i, el := range d.els {
 		d.els[i] = Finalize(el)
 	}
+
+	d.closed = true
+	r := d.r
 	d.mu.Unlock()
 
 	// We call RenderFrame twice to ensure we remove the elements AND
 	// call Unmount on them.
 	d.RenderFrame()
 	d.RenderFrame()
+
+	// If our renderer implements closer then call close
+	if c, ok := r.(io.Closer); ok {
+		c.Close()
+	}
 
 	return nil
 }
