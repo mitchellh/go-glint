@@ -68,7 +68,7 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 	// Remove what we last drew. If what we last drew is greater than the number
 	// of rows then we need to clear the screen.
 	if prev != nil {
-		height := uint(root.LayoutGetHeight())
+		height := uint(prev.LayoutGetHeight())
 		if height > 0 {
 			if height <= rows {
 				// Delete current line
