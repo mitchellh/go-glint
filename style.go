@@ -3,7 +3,7 @@ package glint
 import (
 	"context"
 
-	"gopkg.in/gookit/color.v1"
+	"github.com/gookit/color"
 )
 
 // Style applies visual styles to this component and any children. This

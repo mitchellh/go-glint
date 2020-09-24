@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"github.com/creack/pty"
+	"github.com/gookit/color"
 	"github.com/morikuni/aec"
 	sshterm "golang.org/x/crypto/ssh/terminal"
-	"gopkg.in/gookit/color.v1"
 
 	"github.com/mitchellh/go-glint/flex"
 )
