@@ -176,7 +176,7 @@ func clampTextWidth(s string, width int) string {
 			}
 		} else if idx > 0 {
 			if b != nil {
-				b.WriteString(s[:idx+1])
+				b.WriteString(s[:idx])
 			}
 		}
 

@@ -174,6 +174,13 @@ func TestClampTextWidth(t *testing.T) {
 		},
 
 		{
+			"clamped first line but not second",
+			"helloworld\nhello",
+			5,
+			"hello\nhello",
+		},
+
+		{
 			"unicode multi-byte character",
 			"\u2584",
 			1,
