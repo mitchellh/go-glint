@@ -7,6 +7,7 @@ require (
 	github.com/creack/pty v1.1.11
 	github.com/gookit/color v1.3.1
 	github.com/mitchellh/go-testing-interface v1.14.1
+	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/morikuni/aec v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/tj/go-spin v1.1.0

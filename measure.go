@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/mitchellh/go-glint/flex"
+	"github.com/mitchellh/go-wordwrap"
 )
 
 // TextNodeContext is the *flex.Node.Context set for all *TextComponent flex nodes.
@@ -53,6 +54,18 @@ func MeasureTextNode(
 	// Otherwise, we have to render this.
 	ctx.Text = ctx.C.Render(uint(height), uint(width))
 
+	// Word wrap and truncate if we're beyond the width limit.
+	if !math.IsNaN(float64(width)) && width > 0 {
+		ctx.Text = clampTextWidth(
+			wordwrap.WrapString(ctx.Text, uint(width)),
+			int(width))
+	}
+
+	// Truncate height if we have a limit. This is a no-op if it fits.
+	if !math.IsNaN(float64(height)) && height > 0 {
+		ctx.Text = truncateTextHeight(ctx.Text, int(height))
+	}
+
 	// Calculate the size
 	ctx.Size = flex.Size{
 		Width:  float32(longestLine(ctx.Text)),
@@ -64,16 +77,6 @@ func MeasureTextNode(
 	// should render nil.
 	if ctx.Text == "" {
 		ctx.Size.Height = 1
-	}
-
-	// Truncate height if we have a limit. This is a no-op if it fits.
-	if !math.IsNaN(float64(height)) && height > 0 {
-		ctx.Text = truncateTextHeight(ctx.Text, int(height))
-	}
-
-	// Truncate width if we have a limit. This is a no-op if it fits.
-	if !math.IsNaN(float64(width)) && width > 0 {
-		ctx.Text = clampTextWidth(ctx.Text, int(width))
 	}
 
 	return ctx.Size
