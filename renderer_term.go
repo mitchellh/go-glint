@@ -1,6 +1,7 @@
 package glint
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -63,18 +64,36 @@ func (r *TerminalRenderer) LayoutRoot() *flex.Node {
 func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 	w := r.Output
 	rootCtx := root.Context.(*termRootContext)
-	rows := rootCtx.Rows
 
-	// Remove what we last drew. If what we last drew is greater than the number
-	// of rows then we need to clear the screen.
+	// Draw into a buffer first. This minimizes the time we spend with
+	// a blank screen.
+	var buf bytes.Buffer
+	var sr StringRenderer
+	sr.renderTree(&buf, root, -1, color.IsSupportColor())
+	rootCtx.Buf = &buf
+
 	if prev != nil {
+		// If the previous draw was a terminal and the output was identical,
+		// then we do nothing.
+		prevCtx, ok := prev.Context.(*termRootContext)
+		if ok &&
+			prevCtx != nil &&
+			prevCtx.Buf != nil &&
+			prevCtx.Rows == rootCtx.Rows &&
+			prevCtx.Cols == rootCtx.Cols &&
+			bytes.Equal(prevCtx.Buf.Bytes(), buf.Bytes()) {
+			return
+		}
+
+		// Remove what we last drew. If what we last drew is greater than the number
+		// of rows then we need to clear the screen.
 		height := uint(prev.LayoutGetHeight())
 		if height == 0 {
 			// If our previous render height is zero that means that everything
 			// was finalized and we need to start on a new line.
 			fmt.Fprintf(w, "\n")
 		} else {
-			if height <= rows {
+			if height <= rootCtx.Rows {
 				// Delete current line
 				fmt.Fprint(w, b.Column(0).EraseLine(aec.EraseModes.All).ANSI)
 
@@ -88,9 +107,9 @@ func (r *TerminalRenderer) RenderRoot(root, prev *flex.Node) {
 		}
 	}
 
-	// Draw
-	var sr StringRenderer
-	sr.renderTree(w, root, -1, color.IsSupportColor())
+	// Draw our current output. We wrap buf in a bytes.Reader so we don't
+	// consume the bytes since we'll reuse them in a future call.
+	io.Copy(w, bytes.NewReader(buf.Bytes()))
 }
 
 func (r *TerminalRenderer) Close() error {
@@ -100,6 +119,7 @@ func (r *TerminalRenderer) Close() error {
 
 type termRootContext struct {
 	Rows, Cols uint
+	Buf        *bytes.Buffer
 }
 
 var b = aec.EmptyBuilder
