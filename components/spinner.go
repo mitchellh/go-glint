@@ -2,6 +2,7 @@ package components
 
 import (
 	"context"
+	"time"
 
 	"github.com/mitchellh/go-glint"
 	"github.com/tj/go-spin"
@@ -20,9 +21,16 @@ func Spinner() *SpinnerComponent {
 }
 
 type SpinnerComponent struct {
-	s *spin.Spinner
+	s    *spin.Spinner
+	last time.Time
 }
 
 func (c *SpinnerComponent) Body(context.Context) glint.Component {
-	return glint.Text(c.s.Next())
+	current := time.Now()
+	if c.last.IsZero() || current.Sub(c.last) > 150*time.Millisecond {
+		c.last = current
+		c.s.Next()
+	}
+
+	return glint.Text(c.s.Current())
 }
