@@ -131,17 +131,32 @@ func (d *Document) Render(ctx context.Context) {
 		dur = time.Second / 24
 	}
 
-	t := time.NewTicker(dur)
-	defer t.Stop()
-
 	for {
-		select {
-		case <-ctx.Done():
-			return
+		// Render. We time the render so that we can adapt the framerate
+		// if the render is taking too long.
+		start := time.Now()
+		d.RenderFrame()
+		renderDur := time.Now().Sub(start)
 
-		case <-t.C:
-			d.RenderFrame()
+		// If our context is canceled, end.
+		if ctx.Err() != nil {
+			return
 		}
+
+		// If the duration is greater than our goal duration, then we
+		// adapt our duration. Otherwise, we sleep the duration we want
+		// and continue
+		sleepDur := dur
+		if renderDur > dur {
+			sleepDur = renderDur
+
+			// We slow our attempted framerate down at most to 1 fps
+			if sleepDur > 1*time.Second {
+				sleepDur = 1 * time.Second
+			}
+		}
+
+		time.Sleep(sleepDur)
 	}
 }
 
