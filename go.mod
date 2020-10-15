@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/cheggaaa/pb/v3 v3.0.5
-	github.com/creack/pty v1.1.11
+	github.com/containerd/console v1.0.1
 	github.com/gookit/color v1.3.1
 	github.com/mitchellh/go-testing-interface v1.14.1
 	github.com/mitchellh/go-wordwrap v1.0.1

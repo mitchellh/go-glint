@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/creack/pty"
+	"github.com/containerd/console"
 	"github.com/gookit/color"
 	"github.com/morikuni/aec"
 	sshterm "golang.org/x/crypto/ssh/terminal"
@@ -37,10 +37,11 @@ func (r *TerminalRenderer) LayoutRoot() *flex.Node {
 	rows := r.Rows
 	if cols == 0 || rows == 0 {
 		if f, ok := r.Output.(*os.File); ok && sshterm.IsTerminal(int(f.Fd())) {
-			ws, err := pty.GetsizeFull(f)
-			if err == nil {
-				rows = uint(ws.Rows)
-				cols = uint(ws.Cols)
+			if c, err := console.ConsoleFromFile(f); err == nil {
+				if sz, err := c.Size(); err == nil {
+					rows = uint(sz.Height)
+					cols = uint(sz.Width)
+				}
 			}
 		}
 	}
