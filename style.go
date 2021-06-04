@@ -95,7 +95,8 @@ func ColorRGB(r, g, b uint8) StyleOption {
 	}
 }
 
-// BGColor sets the color by name. The supported colors are listed below.
+// BGColor sets the background color by name. The supported colors are listed
+// below.
 //
 // black, red, green, yellow, blue, magenta, cyan, white, darkGray,
 // lightRed, lightGreen, lightYellow, lightBlue, lightMagenta, lightCyan,
@@ -111,7 +112,7 @@ func BGColor(name string) StyleOption {
 	}
 }
 
-// BGColorHex sets the foreground color by hex code. The value can be
+// BGColorHex sets the background color by hex code. The value can be
 // in formats AABBCC, #AABBCC, 0xAABBCC.
 func BGColorHex(v string) StyleOption {
 	return func(t *styleComponent) {
@@ -119,7 +120,7 @@ func BGColorHex(v string) StyleOption {
 	}
 }
 
-// BGColorRGB sets the foreground color by RGB values.
+// BGColorRGB sets the background color by RGB values.
 func BGColorRGB(r, g, b uint8) StyleOption {
 	return func(t *styleComponent) {
 		t.bgColor = color.RGB(r, g, b, true)
