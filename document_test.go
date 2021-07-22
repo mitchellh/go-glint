@@ -1,6 +1,7 @@
 package glint
 
 import (
+	"bytes"
 	"context"
 	"sync/atomic"
 	"testing"
@@ -67,6 +68,23 @@ func TestDocument_unmountClose(t *testing.T) {
 	require.NoError(d.Close())
 	require.Equal(uint32(1), atomic.LoadUint32(&c.mount))
 	require.Equal(uint32(1), atomic.LoadUint32(&c.unmount))
+}
+
+func TestDocument_renderingWithoutLayout(t *testing.T) {
+	var buf bytes.Buffer
+
+	d := New()
+	d.SetRenderer(&TerminalRenderer{
+		Output: &buf,
+	})
+
+	var c testMount
+	d.Append(&c)
+
+	// Render once
+	d.RenderFrame()
+	require.Empty(t, buf.String())
+	require.Zero(t, atomic.LoadUint32(&c.mount))
 }
 
 type testMount struct {
