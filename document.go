@@ -185,6 +185,9 @@ func (d *Document) RenderFrame() {
 
 	// Setup our root node
 	root := d.r.LayoutRoot()
+	if root == nil {
+		return
+	}
 
 	// Build our render tree
 	tree(ctx, root, Fragment(d.els...), false)
